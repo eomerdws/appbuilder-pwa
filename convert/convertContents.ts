@@ -8,6 +8,7 @@ import { Task, TaskOutput } from './Task';
 
 type ContentItem = {
     id: number;
+    screenId?: number;
     heading?: boolean;
     features?: any;
     title: {
@@ -20,6 +21,8 @@ type ContentItem = {
         [lang: string]: string;
     };
     imageFilename?: string;
+    itemType?: string;
+    contentItemContainer: boolean;
     linkType?: string;
     linkTarget?: string;
     linkLocation?: string;
@@ -60,6 +63,15 @@ function parseFeatureValue(value: any): any {
     }
     // else {} // " " split array, string, enum or time
     return value;
+}
+
+function parseContentItemIsNotScreen(element: Element): boolean {
+    // NOTE: if SAB begins to include a linkType that is not equal to none aka missing or equal
+    // to some other string this method will need to be updated.
+    return (
+        element.getElementsByTagName('link')[0]?.hasAttribute('type') &&
+        element.getElementsByTagName('link')[0]?.getAttribute('type') !== 'none'
+    );
 }
 
 function decodeFromXml(input: string): string {
@@ -122,21 +134,43 @@ export function convertContents(
     // Items
     const itemsTag = document.getElementsByTagName('contents-items')[0];
     const itemTags = itemsTag.getElementsByTagName('contents-item');
+
     if (itemTags?.length > 0) {
         data.items = [];
+        let prevItemType: string | undefined = undefined;
+        let currentScreen: number | undefined = undefined;
+
         for (const itemTag of itemTags) {
+            let itemType: string | undefined = undefined;
+
+            const contentItemContainer = itemTag.hasAttribute('type');
+            itemType = String(contentItemContainer ? itemTag.getAttribute('type') : prevItemType);
+            if (verbose >= 3) console.log(`itemTypes: prev: ${prevItemType} now: ${itemType} `);
+
             const id = Number(itemTag.attributes.getNamedItem('id')!.value);
+            let screenId: number | undefined;
+            if (!parseContentItemIsNotScreen(itemTag)) {
+                currentScreen = id;
+                screenId = undefined;
+            } else {
+                screenId = currentScreen;
+            }
             const heading = itemTag.attributes.getNamedItem('heading')?.value
                 ? Boolean(itemTag.attributes.getNamedItem('heading')?.value)
                 : undefined;
             const title: { [lang: string]: string } = {};
-            const titleTags = itemTag.getElementsByTagName('title');
-            if (titleTags?.length > 0) {
-                for (const titleTag of titleTags) {
-                    const lang = parseLangAttribute(titleTag);
-                    title[lang] = decodeFromXml(titleTag.innerHTML);
+            if (parseContentItemIsNotScreen(itemTag)) {
+                const titleTags = itemTag.getElementsByTagName('title');
+                if (titleTags?.length > 0) {
+                    for (const titleTag of titleTags) {
+                        const lang = parseLangAttribute(titleTag);
+                        title[lang] = decodeFromXml(titleTag.innerHTML);
+                    }
                 }
             }
+
+            if (verbose >= 3 && itemType === undefined)
+                console.warn(`item type is undefined for ${title}`);
 
             const subtitle: { [lang: string]: string } = {};
             const subtitleTags = itemTag.getElementsByTagName('subtitle');
@@ -147,37 +181,41 @@ export function convertContents(
                 }
             }
 
-            const audioFilename: { [lang: string]: string } = {};
-            const audioTags = itemTag.getElementsByTagName('audio');
-            if (audioTags?.length > 0) {
-                for (const audioTag of audioTags) {
-                    const lang = parseLangAttribute(audioTag);
-                    audioFilename[lang] = decodeFromXml(audioTag.innerHTML);
-                    if (hasContentsDir) {
-                        if (existsSync(path.join(contentsDir, audioFilename[lang]))) {
-                            audioFilename[lang] = createHashedFile(
-                                contentsDir,
-                                audioFilename[lang],
-                                verbose,
-                                'contents'
-                            ).replace(/contents\//, '');
-                        } else {
-                            console.warn(`Could not locate ${audioFilename[lang]}`);
+            //if (verbose >= 3) console.log(itemTag.innerHTML);
+            let audioFilename: { [lang: string]: string } = {};
+            let imageFilename: string | undefined = undefined;
+            if (parseContentItemIsNotScreen(itemTag)) {
+                const audioTags = itemTag.getElementsByTagName('audio');
+                if (audioTags?.length > 0) {
+                    for (const audioTag of audioTags) {
+                        const lang = parseLangAttribute(audioTag);
+                        audioFilename[lang] = decodeFromXml(audioTag.innerHTML);
+                        if (hasContentsDir) {
+                            if (existsSync(path.join(contentsDir, audioFilename[lang]))) {
+                                audioFilename[lang] = createHashedFile(
+                                    contentsDir,
+                                    audioFilename[lang],
+                                    verbose,
+                                    'contents'
+                                ).replace(/contents\//, '');
+                            } else {
+                                console.warn(`Could not locate ${audioFilename[lang]}`);
+                            }
                         }
                     }
                 }
-            }
-            let imageFilename = itemTag.getElementsByTagName('image-filename')[0]?.innerHTML;
-            if (hasContentsDir && imageFilename) {
-                if (existsSync(path.join(contentsDir, imageFilename))) {
-                    imageFilename = createHashedFile(
-                        contentsDir,
-                        imageFilename,
-                        verbose,
-                        'contents'
-                    ).replace(/contents\//, '');
-                } else {
-                    console.warn(`Could not locate ${imageFilename}`);
+                imageFilename = itemTag.getElementsByTagName('image-filename')[0]?.innerHTML;
+                if (hasContentsDir && imageFilename) {
+                    if (existsSync(path.join(contentsDir, imageFilename))) {
+                        imageFilename = createHashedFile(
+                            contentsDir,
+                            imageFilename,
+                            verbose,
+                            'contents'
+                        ).replace(/contents\//, '');
+                    } else {
+                        console.warn(`Could not locate ${imageFilename}`);
+                    }
                 }
             }
 
@@ -230,11 +268,14 @@ export function convertContents(
 
             data.items.push({
                 id,
+                screenId,
                 heading,
                 title,
                 subtitle,
                 audioFilename,
                 imageFilename,
+                itemType,
+                contentItemContainer,
                 linkType,
                 linkLocation,
                 linkTarget,
@@ -242,6 +283,8 @@ export function convertContents(
                 layoutMode,
                 layoutCollection
             });
+
+            if (itemType !== prevItemType) prevItemType = itemType; // pass on itemType the next iteration
         }
     }
 

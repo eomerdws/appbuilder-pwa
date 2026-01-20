@@ -6,7 +6,7 @@ export async function load({ params }) {
 
     const items = [];
     for (const item of menu.items) {
-        const found = contents.items.find((x) => x.id === item.id);
+        const found = contents.items.find((x) => x.linkType !== 'none' && x.screenId === item.id);
         if (found) {
             items.push(found);
         }
