@@ -65,15 +65,6 @@ function parseFeatureValue(value: any): any {
     return value;
 }
 
-function parseContentItemIsNotScreen(element: Element): boolean {
-    // NOTE: if SAB begins to include a linkType that is not equal to none aka missing or equal
-    // to some other string this method will need to be updated.
-    return (
-        element.getElementsByTagName('link')[0]?.hasAttribute('type') &&
-        element.getElementsByTagName('link')[0]?.getAttribute('type') !== 'none'
-    );
-}
-
 function decodeFromXml(input: string): string {
     return input
         .replace('&quot;', '"')
@@ -149,7 +140,7 @@ export function convertContents(
 
             const id = Number(itemTag.attributes.getNamedItem('id')!.value);
             let screenId: number | undefined;
-            if (!parseContentItemIsNotScreen(itemTag)) {
+            if (contentItemContainer) {
                 currentScreen = id;
                 screenId = undefined;
             } else {
@@ -159,7 +150,7 @@ export function convertContents(
                 ? Boolean(itemTag.attributes.getNamedItem('heading')?.value)
                 : undefined;
             const title: { [lang: string]: string } = {};
-            if (parseContentItemIsNotScreen(itemTag)) {
+            if (!contentItemContainer) {
                 const titleTags = itemTag.getElementsByTagName('title');
                 if (titleTags?.length > 0) {
                     for (const titleTag of titleTags) {
@@ -184,7 +175,7 @@ export function convertContents(
             //if (verbose >= 3) console.log(itemTag.innerHTML);
             let audioFilename: { [lang: string]: string } = {};
             let imageFilename: string | undefined = undefined;
-            if (parseContentItemIsNotScreen(itemTag)) {
+            if (!contentItemContainer) {
                 const audioTags = itemTag.getElementsByTagName('audio');
                 if (audioTags?.length > 0) {
                     for (const audioTag of audioTags) {

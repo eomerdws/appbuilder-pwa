@@ -6,11 +6,13 @@ export async function load({ params }) {
 
     const items = [];
     for (const item of menu.items) {
-        const found = contents.items.find((x) => x.linkType !== 'none' && x.screenId === item.id);
+        const found = contents.items.find((x) => !x.contentItemContainer && x.screenId === item.id);
         if (found) {
+            console.log(found);
             items.push(found);
         }
     }
+
 
     const features = contents.features;
 
