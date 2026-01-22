@@ -8,7 +8,7 @@ import { Task, TaskOutput } from './Task';
 
 type ContentItem = {
     id: number;
-    screenId?: number;
+    contentContainerId?: number;
     heading?: boolean;
     features?: any;
     title: {
@@ -46,6 +46,7 @@ export type ContentsData = {
     };
     features?: any;
     items?: ContentItem[];
+    nestedItems?: boolean;
     screens?: ContentScreen[];
 };
 
@@ -122,6 +123,8 @@ export function convertContents(
         data.features[name] = parseFeatureValue(value);
     }
 
+    let nestedItems = false;
+
     // Items
     const itemsTag = document.getElementsByTagName('contents-items')[0];
     const itemTags = itemsTag.getElementsByTagName('contents-item');
@@ -129,22 +132,23 @@ export function convertContents(
     if (itemTags?.length > 0) {
         data.items = [];
         let prevItemType: string | undefined = undefined;
-        let currentScreen: number | undefined = undefined;
+        let currentContentContainer: number | undefined = undefined;
 
         for (const itemTag of itemTags) {
             let itemType: string | undefined = undefined;
 
             const contentItemContainer = itemTag.hasAttribute('type');
+            if (contentItemContainer) nestedItems = true;
             itemType = String(contentItemContainer ? itemTag.getAttribute('type') : prevItemType);
             if (verbose >= 3) console.log(`itemTypes: prev: ${prevItemType} now: ${itemType} `);
 
             const id = Number(itemTag.attributes.getNamedItem('id')!.value);
-            let screenId: number | undefined;
+            let contentContainerId: number | undefined;
             if (contentItemContainer) {
-                currentScreen = id;
-                screenId = undefined;
+                currentContentContainer = id;
+                contentContainerId = undefined;
             } else {
-                screenId = currentScreen;
+                contentContainerId = currentContentContainer;
             }
             const heading = itemTag.attributes.getNamedItem('heading')?.value
                 ? Boolean(itemTag.attributes.getNamedItem('heading')?.value)
@@ -259,7 +263,7 @@ export function convertContents(
 
             data.items.push({
                 id,
-                screenId,
+                contentContainerId,
                 heading,
                 title,
                 subtitle,
@@ -278,6 +282,8 @@ export function convertContents(
             if (itemType !== prevItemType) prevItemType = itemType; // pass on itemType the next iteration
         }
     }
+
+    data.nestedItems = nestedItems;
 
     // Screens
     const screensTag = document.getElementsByTagName('contents-screens')[0];

@@ -253,73 +253,108 @@
 
     <div class="overflow-y-auto mx-auto max-w-screen-md w-full">
         <div id="container" class="contents" style={convertStyle($s['body.contents'])}>
-            {#each $page.data.items as item}
-                <!-- iterate through the items, adding html -->
+            {#if $page.data.nestedItems === true}
+                {#each $page.data.items as itemContainer}
+                    {#if itemContainer[0].itemType ==='grid'}
+                    <!-- Grid layout which needs to be handled eventually by a component -->
 
-                <!-- svelte-ignore a11y_click_events_have_key_events -->
-                <!-- svelte-ignore a11y_no_static_element_interactions -->
-                <div
-                    class="contents-item-block-base contents-item-block contents-link-ref"
-                    id={item.id}
-                    onclick={(event) => onClick(event, item)}
-                >
-                    <!--check for the various elements in the item-->
-                    {#if item.audioFilename[$language] || item.audioFilename.default}
-                        <!-- svelte-ignore a11y_click_events_have_key_events -->
-                        <!-- svelte-ignore a11y_no_static_element_interactions -->
-                        <div
-                            class="contents-item-audio-image"
-                            onclick={(event) => playAudio(event, item)}
-                        >
-                            <AudioIcon.Volume></AudioIcon.Volume>
-                        </div>
-                    {/if}
-
-                    {#if item.imageFilename}
-                        <div
-                            class="contents-image-block"
-                            style="{convertStyle($s['div.contents-image-block'])}{checkImageSize(
-                                item
-                            )}"
-                        >
-                            <img
-                                class="contents-image"
-                                src="{base}/{imageFolder}/{item.imageFilename}"
-                                alt={item.imageFilename}
-                            />
-                        </div>
-                    {/if}
-
-                    <div class="contents-text-block" style:font-size="{$contentsFontSize}px">
-                        <!-- check for title -->
-                        {#if $page.data.features['show-titles'] === true}
-                            <div class="contents-title">
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                        <div class="grid grid-cols-3 gap-4">
+                        {#each itemContainer as item}
+                            <!-- Grid items go here -->
+                            <div class="contents-item-block-base contents-item-block contents-link-ref" 
+                            id={item.id} 
+                            onclick={(event) => onClick(event, item)}>
+                                {#if item.imageFilename}
+                                    <div
+                                        class="contents-image-block"
+                                        style="{convertStyle($s['div.contents-image-block'])}{checkImageSize(
+                                            item
+                                        )}"
+                                    >
+                                        <img
+                                            class="contents-image"
+                                            src="{base}/{imageFolder}/{item.imageFilename}"
+                                            alt={item.imageFilename}
+                                        />
+                                    </div>
+                                {/if}
                                 {item.title[$language] ?? item.title.default ?? ''}
                             </div>
-                        {/if}
+                        {/each}
+                    </div>
+                    {/if}
+                {/each}
+            {:else }
+                {#each $page.data.items as item}
+                    <!-- iterate through the items, adding html -->
 
-                        <!--Check for subtitle-->
-                        {#if $page.data.features['show-subtitles'] === true}
-                            <div class="contents-subtitle">
-                                {item.subtitle[$language] ?? item.subtitle.default ?? ''}
+                    <!-- svelte-ignore a11y_click_events_have_key_events -->
+                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                    <div
+                        class="contents-item-block-base contents-item-block contents-link-ref"
+                        id={item.id}
+                        onclick={(event) => onClick(event, item)}
+                    >
+                        <!--check for the various elements in the item-->
+                        {#if item.audioFilename[$language] || item.audioFilename.default}
+                            <!-- svelte-ignore a11y_click_events_have_key_events -->
+                            <!-- svelte-ignore a11y_no_static_element_interactions -->
+                            <div
+                                class="contents-item-audio-image"
+                                onclick={(event) => playAudio(event, item)}
+                            >
+                                <AudioIcon.Volume></AudioIcon.Volume>
                             </div>
                         {/if}
 
-                        <!--check for reference -->
-                        {#if $page.data.features['show-references'] === true}
-                            {#if item.linkType === 'reference'}
-                                {#await loadReferenceText(item)}
-                                    <div class="contents-ref"></div>
-                                {:then referenceText}
-                                    <div class="contents-ref">{referenceText}</div>
-                                {:catch error}
-                                    <div class="contents-ref"></div>
-                                {/await}
-                            {/if}
+                        {#if item.imageFilename}
+                            <div
+                                class="contents-image-block"
+                                style="{convertStyle($s['div.contents-image-block'])}{checkImageSize(
+                                    item
+                                )}"
+                            >
+                                <img
+                                    class="contents-image"
+                                    src="{base}/{imageFolder}/{item.imageFilename}"
+                                    alt={item.imageFilename}
+                                />
+                            </div>
                         {/if}
+
+                        <div class="contents-text-block" style:font-size="{$contentsFontSize}px">
+                            <!-- check for title -->
+                            {#if $page.data.features['show-titles'] === true}
+                                <div class="contents-title">
+                                    {item.title[$language] ?? item.title.default ?? ''}
+                                </div>
+                            {/if}
+
+                            <!--Check for subtitle-->
+                            {#if $page.data.features['show-subtitles'] === true}
+                                <div class="contents-subtitle">
+                                    {item.subtitle[$language] ?? item.subtitle.default ?? ''}
+                                </div>
+                            {/if}
+
+                            <!--check for reference -->
+                            {#if $page.data.features['show-references'] === true}
+                                {#if item.linkType === 'reference'}
+                                    {#await loadReferenceText(item)}
+                                        <div class="contents-ref"></div>
+                                    {:then referenceText}
+                                        <div class="contents-ref">{referenceText}</div>
+                                    {:catch error}
+                                        <div class="contents-ref"></div>
+                                    {/await}
+                                {/if}
+                            {/if}
+                        </div>
                     </div>
-                </div>
-            {/each}
+                {/each}
+            {/if}
         </div>
     </div>
     {#if bottomNavBarEnabled}
