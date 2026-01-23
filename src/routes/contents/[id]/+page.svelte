@@ -2,6 +2,7 @@
     import { base } from '$app/paths';
     import { page } from '$app/stores';
     import BottomNavigationBar from '$lib/components/BottomNavigationBar.svelte';
+    import Carousel from '$lib/components/Carousel.svelte';
     import Navbar from '$lib/components/Navbar.svelte';
     import { loadCatalog } from '$lib/data/catalogData';
     import config from '$lib/data/config';
@@ -255,38 +256,56 @@
         <div id="container" class="contents" style={convertStyle($s['body.contents'])}>
             {#if $page.data.nestedItems === true}
                 {#each $page.data.items as itemContainer}
-                    {#if itemContainer[0].itemType ==='grid'}
-                    <!-- Grid layout which needs to be handled eventually by a component -->
+                    {#if itemContainer[0].itemType === 'grid'}
+                        <!-- Grid layout which needs to be handled eventually by a component -->
 
-                    <!-- svelte-ignore a11y_click_events_have_key_events -->
-                    <!-- svelte-ignore a11y_no_static_element_interactions -->
+                        <!-- svelte-ignore a11y_click_events_have_key_events -->
+                        <!-- svelte-ignore a11y_no_static_element_interactions -->
                         <div class="grid grid-cols-3 gap-4">
-                        {#each itemContainer as item}
-                            <!-- Grid items go here -->
-                            <div class="contents-item-block-base contents-item-block contents-link-ref" 
-                            id={item.id} 
-                            onclick={(event) => onClick(event, item)}>
-                                {#if item.imageFilename}
-                                    <div
-                                        class="contents-image-block"
-                                        style="{convertStyle($s['div.contents-image-block'])}{checkImageSize(
-                                            item
-                                        )}"
-                                    >
-                                        <img
-                                            class="contents-image"
-                                            src="{base}/{imageFolder}/{item.imageFilename}"
-                                            alt={item.imageFilename}
-                                        />
-                                    </div>
-                                {/if}
-                                {item.title[$language] ?? item.title.default ?? ''}
-                            </div>
-                        {/each}
-                    </div>
+                            {#each itemContainer as item}
+                                <!-- Grid items go here -->
+                                <div
+                                    class="contents-item-block-base contents-item-block contents-link-ref"
+                                    id={item.id}
+                                    onclick={(event) => onClick(event, item)}
+                                >
+                                    {#if item.imageFilename}
+                                        <div
+                                            class="contents-image-block"
+                                            style="{convertStyle(
+                                                $s['div.contents-image-block']
+                                            )}{checkImageSize(item)}"
+                                        >
+                                            <img
+                                                class="contents-image"
+                                                src="{base}/{imageFolder}/{item.imageFilename}"
+                                                alt={item.imageFilename}
+                                            />
+                                        </div>
+                                    {/if}
+                                    {item.title[$language] ?? item.title.default ?? ''}
+                                </div>
+                            {/each}
+                        </div>
+                    {:else if itemContainer[0].itemType === 'carousel'}
+                        <!-- Carousel layout which needs to eventually handled by its own component -->
+                        <!-- TODO: once this page is converted to TS there is a nice interface to handle the opts; for now we have to pass each one -->
+                        <Carousel
+                            id={itemContainer[0].contentContainerId}
+                            items={itemContainer}
+                            {imageFolder}
+                            onClick="onClick"
+                            {checkImageSize}
+                            perPage="3"
+                            loop="false"
+                            startIndex="0"
+                            draggable="true"
+                        />
+                    {:else if itemContainer[0].itemType === 'heading'}
+                        <div>Heading layout not implemented</div>
                     {/if}
                 {/each}
-            {:else }
+            {:else}
                 {#each $page.data.items as item}
                     <!-- iterate through the items, adding html -->
 
@@ -312,9 +331,9 @@
                         {#if item.imageFilename}
                             <div
                                 class="contents-image-block"
-                                style="{convertStyle($s['div.contents-image-block'])}{checkImageSize(
-                                    item
-                                )}"
+                                style="{convertStyle(
+                                    $s['div.contents-image-block']
+                                )}{checkImageSize(item)}"
                             >
                                 <img
                                     class="contents-image"

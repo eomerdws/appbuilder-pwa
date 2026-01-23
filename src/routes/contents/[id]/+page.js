@@ -13,19 +13,25 @@ export async function load({ params }) {
         } else {
             // NOTE: If the item is the upper level container it has an id but no contentContainerId
             const curContainerId = contents.items.find((x) => x.id === item.id)?.id;
-            //console.log('curContainerId:', curContainerId);
+            console.log('curContainerId:', curContainerId);
             if (curContainerId !== undefined || curContainerId !== null) {
-                found = contents.items.filter((x) => x.contentContainerId === curContainerId && x.linkType !== 'none');
-            } else { console.warn('No container items were loaded.'); }
+                found = contents.items.filter(
+                    (x) =>
+                        x.contentContainerId === curContainerId &&
+                        x.linkType !== 'none' &&
+                        !x.contentItemContainer
+                );
+            } else {
+                console.warn('No container items were loaded.');
+            }
         }
-        if (found) { 
+        if (found) {
             items.push(found);
         }
     }
 
-    console.log("items before frontend:")
+    console.log('items before frontend:');
     console.log(items);
-
 
     const features = contents.features;
 
