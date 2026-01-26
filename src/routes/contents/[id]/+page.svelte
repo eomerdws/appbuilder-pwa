@@ -265,19 +265,17 @@
                             {#each itemContainer as item}
                                 <!-- Grid items go here -->
                                 <div
-                                    class="contents-item-block-base contents-item-block contents-link-ref"
+                                    class="contents-grid-item-block contents-grid-item-block-base contents-link-ref"
                                     id={item.id}
                                     onclick={(event) => onClick(event, item)}
                                 >
                                     {#if item.imageFilename}
                                         <div
-                                            class="contents-image-block"
                                             style="{convertStyle(
                                                 $s['div.contents-image-block']
                                             )}{checkImageSize(item)}"
                                         >
                                             <img
-                                                class="contents-image"
                                                 src="{base}/{imageFolder}/{item.imageFilename}"
                                                 alt={item.imageFilename}
                                             />
@@ -294,7 +292,7 @@
                             id={itemContainer[0].contentContainerId}
                             items={itemContainer}
                             {imageFolder}
-                            onClick="onClick"
+                            {onClick}
                             {checkImageSize}
                             perPage="3"
                             loop="false"

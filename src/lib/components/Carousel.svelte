@@ -52,37 +52,39 @@
             multipleDrag: multipleDrag,
             threshold: threshold,
             rtl: rtl,
-            selector: selector
+            selector: '.' + selector
         });
     });
+
+    console.log(typeof onClickCallback);
 </script>
 
-<div {id} class="dy-carousel dy-rounded-box {selector}">
-    {#each items as item}
-        <!-- svelte-ignore a11y_click_events_have_key_events -->
-        <!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="carousel-contents">
+    <div class="{selector} dy-carousel">
+        {#each items as item}
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
 
-        <div
-            class="dy-carousel-item contents-item-block-base contents-item-block contents-link-ref"
-            id={item.id}
-            onclick={(event) => onClickCallback(event, item)}
-        >
-            {#if item.imageFilename}
-                <div
-                    class="contents-image-block"
-                    style="{convertStyle($s['div.contents-image-block'])}{checkImageSizeCallback(
-                        item
-                    )}"
-                >
-                    <img
-                        class="contents-image"
-                        src="{base}/{imageFolder}/{item.imageFilename}"
-                        alt={item.imageFilename}
-                    />
-                </div>
-            {/if}
+            <div
+                class="dy-carousel-item contents-carousel-item-block contents-carousel-item-block-base"
+                id={item.id}
+                onclick={(event) => onClickCallback(event, item)}
+            >
+                {#if item.imageFilename}
+                    <div
+                        style="{convertStyle(
+                            $s['div.contents-image-block']
+                        )}{checkImageSizeCallback(item)}"
+                    >
+                        <img
+                            src="{base}/{imageFolder}/{item.imageFilename}"
+                            alt={item.imageFilename}
+                        />
+                    </div>
+                {/if}
 
-            {item.title[$language] ?? item.title.default ?? ''}
-        </div>
-    {/each}
+                {item.title[$language] ?? item.title.default ?? ''}
+            </div>
+        {/each}
+    </div>
 </div>

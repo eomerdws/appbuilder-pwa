@@ -4,7 +4,10 @@ export async function load({ params }) {
     const id = Number(params.id);
     const menu = contents.screens.find((x) => x.id === id);
     const nestedItems = contents.nestedItems;
+    const features = contents.features;
+    const title = contents.title;
 
+    // ISSUE: Need to find a way to be sure that the visible-items feature is showing up, but per caraousel as each carousel could have different visible-items
     const items = [];
     for (const item of menu.items) {
         let found;
@@ -32,10 +35,6 @@ export async function load({ params }) {
 
     console.log('items before frontend:');
     console.log(items);
-
-    const features = contents.features;
-
-    const title = contents.title;
 
     return { menu, items, features, title, nestedItems };
 }
