@@ -135,7 +135,7 @@
                             </div>
                         {/if}
 
-                        <!-- Check for subtitle -->
+                        <!-- Check for subtitles -->
                         {#if features['show-subtitles'] === true}
                             <div
                                 class="contents-caoursel-item-subtitle-block contents-carousel-item-subtitle"

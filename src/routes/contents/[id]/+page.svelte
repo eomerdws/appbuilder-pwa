@@ -2,7 +2,8 @@
     import { base } from '$app/paths';
     import { page } from '$app/stores';
     import BottomNavigationBar from '$lib/components/BottomNavigationBar.svelte';
-    import Carousel from '$lib/components/Carousel.svelte';
+    import ContentCarousel from '$lib/components/ContentCarousel.svelte';
+    import ContentGrid from '$lib/components/ContentGrid.svelte';
     import Navbar from '$lib/components/Navbar.svelte';
     import { loadCatalog } from '$lib/data/catalogData';
     import config from '$lib/data/config';
@@ -257,38 +258,18 @@
             {#if $page.data.nestedItems === true}
                 {#each $page.data.items as itemContainer}
                     {#if itemContainer[0].itemType === 'grid'}
-                        <!-- Grid layout which needs to be handled eventually by a component -->
-
-                        <!-- svelte-ignore a11y_click_events_have_key_events -->
-                        <!-- svelte-ignore a11y_no_static_element_interactions -->
-                        <div class="contents-grid">
-                            <div class="grid grid-cols-3 gap-4">
-                                {#each itemContainer as item}
-                                    <!-- Grid items go here -->
-                                    <div
-                                        class="contents-grid-item-block contents-grid-item-block-base contents-link-ref"
-                                        id={item.id}
-                                        onclick={(event) => onClick(event, item)}
-                                    >
-                                        {#if item.imageFilename}
-                                            <div
-                                                style="{convertStyle(
-                                                    $s['div.contents-image-block']
-                                                )}{checkImageSize(item)}"
-                                            >
-                                                <img
-                                                    src="{base}/{imageFolder}/{item.imageFilename}"
-                                                    alt={item.imageFilename}
-                                                />
-                                            </div>
-                                        {/if}
-                                        {item.title[$language] ?? item.title.default ?? ''}
-                                    </div>
-                                {/each}
-                            </div>
-                        </div>
+                        <ContentGrid
+                            id={itemContainer[0].contentContainerId}
+                            items={itemContainer}
+                            {imageFolder}
+                            {onClick}
+                            {checkImageSize}
+                            {loadReferenceText}
+                            {contentsFontSize}
+                            features={$page.data.features}
+                        />
                     {:else if itemContainer[0].itemType === 'carousel'}
-                        <Carousel
+                        <ContentCarousel
                             id={itemContainer[0].contentContainerId}
                             items={itemContainer}
                             {imageFolder}
