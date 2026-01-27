@@ -261,29 +261,31 @@
 
                         <!-- svelte-ignore a11y_click_events_have_key_events -->
                         <!-- svelte-ignore a11y_no_static_element_interactions -->
-                        <div class="grid grid-cols-3 gap-4">
-                            {#each itemContainer as item}
-                                <!-- Grid items go here -->
-                                <div
-                                    class="contents-grid-item-block contents-grid-item-block-base contents-link-ref"
-                                    id={item.id}
-                                    onclick={(event) => onClick(event, item)}
-                                >
-                                    {#if item.imageFilename}
-                                        <div
-                                            style="{convertStyle(
-                                                $s['div.contents-image-block']
-                                            )}{checkImageSize(item)}"
-                                        >
-                                            <img
-                                                src="{base}/{imageFolder}/{item.imageFilename}"
-                                                alt={item.imageFilename}
-                                            />
-                                        </div>
-                                    {/if}
-                                    {item.title[$language] ?? item.title.default ?? ''}
-                                </div>
-                            {/each}
+                        <div class="contents-grid">
+                            <div class="grid grid-cols-3 gap-4">
+                                {#each itemContainer as item}
+                                    <!-- Grid items go here -->
+                                    <div
+                                        class="contents-grid-item-block contents-grid-item-block-base contents-link-ref"
+                                        id={item.id}
+                                        onclick={(event) => onClick(event, item)}
+                                    >
+                                        {#if item.imageFilename}
+                                            <div
+                                                style="{convertStyle(
+                                                    $s['div.contents-image-block']
+                                                )}{checkImageSize(item)}"
+                                            >
+                                                <img
+                                                    src="{base}/{imageFolder}/{item.imageFilename}"
+                                                    alt={item.imageFilename}
+                                                />
+                                            </div>
+                                        {/if}
+                                        {item.title[$language] ?? item.title.default ?? ''}
+                                    </div>
+                                {/each}
+                            </div>
                         </div>
                     {:else if itemContainer[0].itemType === 'carousel'}
                         <!-- Carousel layout which needs to eventually handled by its own component -->
@@ -294,10 +296,11 @@
                             {imageFolder}
                             {onClick}
                             {checkImageSize}
-                            perPage="3"
-                            loop="false"
+                            {loadReferenceText}
                             startIndex="0"
                             draggable="true"
+                            ,
+                            features={$page.data.features}
                         />
                     {:else if itemContainer[0].itemType === 'heading'}
                         <div>Heading layout not implemented</div>

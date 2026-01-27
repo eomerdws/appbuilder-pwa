@@ -2,8 +2,8 @@
     import { base } from '$app/paths';
     import type { CarouselOpts } from '$lib/data/carouselOpts';
     import { convertStyle, language, s } from '$lib/data/stores';
-    import Siema from 'siema';
-    import { onMount } from 'svelte';
+    import { onDestroy, onMount } from 'svelte';
+    import type { MouseEventHandler } from 'svelte/elements';
 
     let {
         id,
@@ -11,30 +11,27 @@
         imageFolder,
         onClick,
         checkImageSize,
+        loadReferenceText,
         perPage, // TODO: Check that this value is even being passed to the content.xml
-        loop,
-        startIndex,
-        draggable,
-        multipleDrag,
-        threshold,
-        rtl,
-        selector
+        startIndex, // TODO: Determine if this is needed
+        rtl, // TODO: Determine if this is needed
+        features
     } = $props();
 
     const onClickCallback = onClick ?? onClickFallback;
     const checkImageSizeCallback = checkImageSize ?? checkImageSizeFallback;
+    const loadReferenceTextCallback = loadReferenceText ?? loadReferenceTextFallback;
+    const carouselId = `contents-carousel-${id}`;
+    let curIdx: number = 0;
 
     // Check for defined Siema values if non put default values
     if (perPage === undefined || perPage > 5) perPage = 3;
-    if (loop === undefined) loop = false;
     if (startIndex === undefined) startIndex = 0;
-    if (draggable === undefined) draggable = true;
-    if (multipleDrag === undefined) multipleDrag = false;
-    if (threshold === undefined || threshold <= 0) threshold = 20; // Siema default in the documentation
+    if (typeof startIndex === 'string') startIndex = Number(startIndex);
     if (rtl === undefined) rtl = false;
-    if (selector === undefined || selector === null) selector = `content-carousel-${id.toString()}`;
 
-    console.log(`selector: ${selector}`);
+    let isScrolling = false;
+
     function onClickFallback(event: Event, item: any) {
         console.warn('USING THE onClickFallback');
     }
@@ -43,48 +40,126 @@
         console.warn('USING checkImageSizeFallback');
     }
 
+    function loadReferenceTextFallback(item: any) {
+        console.warn('USING loadReferenceFallback');
+    }
+
+    function carouselOnClickHandler(e: Event, item: any) {
+        onClickCallback(e, item);
+    }
+
     onMount(() => {
-        let contentCarousel = new Siema({
-            perPage: perPage,
-            loop: loop,
-            startIndex: startIndex,
-            draggable: draggable,
-            multipleDrag: multipleDrag,
-            threshold: threshold,
-            rtl: rtl,
-            selector: '.' + selector
+        const carousel: HTMLElement = document.getElementById(carouselId);
+        const carouselScroll: HTMLElement = carousel.querySelector('.contents-carousel-row');
+
+        let isDown = false;
+        let startX = 0;
+        let scrollLeft = 0;
+
+        carouselScroll.addEventListener('mousedown', (e: MouseEvent) => {
+            isDown = true;
+            startX = e.pageX - carouselScroll.offsetLeft;
+            scrollLeft = carouselScroll.scrollLeft;
+        });
+
+        carouselScroll.addEventListener('mouseleave', (e: MouseEvent) => {
+            isDown = false;
+            isScrolling = false;
+        });
+
+        carouselScroll.addEventListener('mouseup', (e: MouseEvent) => {
+            if (!isScrolling) {
+                // register onclick event
+                let itemUnderMouse = document.elementFromPoint(e.clientX, e.clientY);
+                if (
+                    itemUnderMouse.id === undefined ||
+                    itemUnderMouse.id === '' ||
+                    itemUnderMouse.id === null
+                )
+                    itemUnderMouse = itemUnderMouse.parentElement.parentElement; // Handle clicks on iamges
+                const curItem = items.find((x) => x.id === Number(itemUnderMouse.id));
+                carouselOnClickHandler(e, curItem);
+            }
+
+            // finish
+            isScrolling = false;
+            isDown = false;
+        });
+
+        carouselScroll.addEventListener('mousemove', (e: MouseEvent) => {
+            if (!isDown) return;
+
+            isScrolling = true;
+            e.preventDefault();
+            const x = e.pageX - carouselScroll.offsetLeft;
+            const walk = (x - startX) * 3; //NOTE: this may need to be evaluated based on perPage options
+            carouselScroll.scrollLeft = scrollLeft - walk;
         });
     });
-
-    console.log(typeof onClickCallback);
 </script>
 
-<div class="carousel-contents">
-    <div class="{selector} dy-carousel">
-        {#each items as item}
-            <!-- svelte-ignore a11y_click_events_have_key_events -->
-            <!-- svelte-ignore a11y_no_static_element_interactions -->
+<div id={carouselId} class="contents-carousel no-select">
+    <div class="contents-carousel-row" style="overscroll-behavior: auto contain">
+        <div class="contents-carousel-inner n2">
+            {#each items as item}
+                <!-- svelte-ignore a11y_click_events_have_key_events -->
+                <!-- svelte-ignore a11y_no_static_element_interactions -->
 
-            <div
-                class="dy-carousel-item contents-carousel-item-block contents-carousel-item-block-base"
-                id={item.id}
-                onclick={(event) => onClickCallback(event, item)}
-            >
-                {#if item.imageFilename}
-                    <div
-                        style="{convertStyle(
-                            $s['div.contents-image-block']
-                        )}{checkImageSizeCallback(item)}"
-                    >
-                        <img
-                            src="{base}/{imageFolder}/{item.imageFilename}"
-                            alt={item.imageFilename}
-                        />
+                <div
+                    class="contents-carousel-item-block contents-carousel-item-block-base"
+                    id={item.id}
+                    style="scroll-snap-type: center;"
+                >
+                    {#if item.imageFilename}
+                        <div
+                            style="{convertStyle(
+                                $s['div.contents-image-block']
+                            )}{checkImageSizeCallback(item)}"
+                        >
+                            <img
+                                src="{base}/{imageFolder}/{item.imageFilename}"
+                                alt={item.imageFilename}
+                                draggable="false"
+                            />
+                        </div>
+                    {/if}
+
+                    <div class="contents-carsosel-text-block">
+                        {#if features['show-title'] === true}
+                            <div class="contents-carousel-item-title">
+                                {item.title[$language] ?? item.title.default ?? ''}
+                            </div>
+                        {/if}
+
+                        {#if features['show-subtitles'] === true}
+                            <div class="contents-carousel-item-subtitle">
+                                {item.subtitle[$language] ?? item.subtitle.default ?? ''}
+                            </div>
+                        {/if}
+
+                        {#if features['show-references'] === true}
+                            {#if item.linkType === 'reference'}
+                                {#await loadReferenceTextCallback(item)}
+                                    <div class="contents-ref"></div>
+                                {:then referenceText}
+                                    <div class="contents-ref">{referenceText}</div>
+                                {:catch error}
+                                    <div class="contents-ref"></div>
+                                {/await}
+                            {/if}
+                        {/if}
                     </div>
-                {/if}
-
-                {item.title[$language] ?? item.title.default ?? ''}
-            </div>
-        {/each}
+                </div>
+            {/each}
+        </div>
     </div>
 </div>
+
+<style>
+    .no-select {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+</style>
