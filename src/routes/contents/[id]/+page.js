@@ -16,7 +16,6 @@ export async function load({ params }) {
         } else {
             // NOTE: If the item is the upper level container it has an id but no contentContainerId
             const curContainerId = contents.items.find((x) => x.id === item.id)?.id;
-            console.log('curContainerId:', curContainerId);
             if (curContainerId !== undefined || curContainerId !== null) {
                 found = contents.items.filter(
                     (x) =>
@@ -32,9 +31,6 @@ export async function load({ params }) {
             items.push(found);
         }
     }
-
-    console.log('items before frontend:');
-    console.log(items);
 
     return { menu, items, features, title, nestedItems };
 }

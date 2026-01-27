@@ -1,9 +1,7 @@
 <script lang="ts">
     import { base } from '$app/paths';
-    import type { CarouselOpts } from '$lib/data/carouselOpts';
     import { convertStyle, language, s } from '$lib/data/stores';
-    import { onDestroy, onMount } from 'svelte';
-    import type { MouseEventHandler } from 'svelte/elements';
+    import { onMount } from 'svelte';
 
     let {
         id,
@@ -12,6 +10,7 @@
         onClick,
         checkImageSize,
         loadReferenceText,
+        contentsFontSize,
         perPage, // TODO: Check that this value is even being passed to the content.xml
         startIndex, // TODO: Determine if this is needed
         rtl, // TODO: Determine if this is needed
@@ -29,8 +28,6 @@
     if (startIndex === undefined) startIndex = 0;
     if (typeof startIndex === 'string') startIndex = Number(startIndex);
     if (rtl === undefined) rtl = false;
-
-    let isScrolling = false;
 
     function onClickFallback(event: Event, item: any) {
         console.warn('USING THE onClickFallback');
@@ -55,6 +52,7 @@
         let isDown = false;
         let startX = 0;
         let scrollLeft = 0;
+        let isScrolling = false;
 
         carouselScroll.addEventListener('mousedown', (e: MouseEvent) => {
             isDown = true;
@@ -124,25 +122,37 @@
                         </div>
                     {/if}
 
-                    <div class="contents-carsosel-text-block">
-                        {#if features['show-title'] === true}
-                            <div class="contents-carousel-item-title">
+                    <div
+                        class="contents-carousel-item-text-block"
+                        style:font-size="{$contentsFontSize}px"
+                    >
+                        <!-- check for title -->
+                        {#if features['show-titles'] === true}
+                            <div
+                                class="contents-carousel-item-title-block contents-carousel-item-title"
+                            >
                                 {item.title[$language] ?? item.title.default ?? ''}
                             </div>
                         {/if}
 
+                        <!-- Check for subtitle -->
                         {#if features['show-subtitles'] === true}
-                            <div class="contents-carousel-item-subtitle">
+                            <div
+                                class="contents-caoursel-item-subtitle-block contents-carousel-item-subtitle"
+                            >
                                 {item.subtitle[$language] ?? item.subtitle.default ?? ''}
                             </div>
                         {/if}
 
+                        <!-- Check for reference -->
                         {#if features['show-references'] === true}
                             {#if item.linkType === 'reference'}
                                 {#await loadReferenceTextCallback(item)}
                                     <div class="contents-ref"></div>
                                 {:then referenceText}
-                                    <div class="contents-ref">{referenceText}</div>
+                                    <div class="contents-ref" style="text-align:center;">
+                                        {referenceText}
+                                    </div>
                                 {:catch error}
                                     <div class="contents-ref"></div>
                                 {/await}

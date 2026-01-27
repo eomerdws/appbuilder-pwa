@@ -288,8 +288,6 @@
                             </div>
                         </div>
                     {:else if itemContainer[0].itemType === 'carousel'}
-                        <!-- Carousel layout which needs to eventually handled by its own component -->
-                        <!-- TODO: once this page is converted to TS there is a nice interface to handle the opts; for now we have to pass each one -->
                         <Carousel
                             id={itemContainer[0].contentContainerId}
                             items={itemContainer}
@@ -297,6 +295,7 @@
                             {onClick}
                             {checkImageSize}
                             {loadReferenceText}
+                            {contentsFontSize}
                             startIndex="0"
                             draggable="true"
                             ,
