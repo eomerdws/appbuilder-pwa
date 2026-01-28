@@ -4,6 +4,7 @@
     import BottomNavigationBar from '$lib/components/BottomNavigationBar.svelte';
     import ContentCarousel from '$lib/components/ContentCarousel.svelte';
     import ContentGrid from '$lib/components/ContentGrid.svelte';
+    import ContentHeading from '$lib/components/ContentHeading.svelte';
     import Navbar from '$lib/components/Navbar.svelte';
     import { loadCatalog } from '$lib/data/catalogData';
     import config from '$lib/data/config';
@@ -279,11 +280,18 @@
                             {contentsFontSize}
                             startIndex="0"
                             draggable="true"
-                            ,
                             features={$page.data.features}
                         />
                     {:else if itemContainer[0].itemType === 'heading'}
-                        <div>Heading layout not implemented</div>
+                        <ContentHeading
+                            id={itemContainer[0].contentContainerId}
+                            items={itemContainer}
+                            {imageFolder}
+                            {onClick}
+                            {checkImageSize}
+                            {contentsFontSize}
+                            features={$page.data.features}
+                        />
                     {/if}
                 {/each}
             {:else}

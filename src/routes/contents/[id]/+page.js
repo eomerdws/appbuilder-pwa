@@ -17,6 +17,7 @@ export async function load({ params }) {
             // NOTE: If the item is the upper level container it has an id but no contentContainerId
             const curContainerId = contents.items.find((x) => x.id === item.id)?.id;
             if (curContainerId !== undefined || curContainerId !== null) {
+                console.log(`curContainerId: ${curContainerId}`);
                 found = contents.items.filter(
                     (x) =>
                         x.contentContainerId === curContainerId &&
@@ -27,10 +28,16 @@ export async function load({ params }) {
                 console.warn('No container items were loaded.');
             }
         }
-        if (found) {
+
+        if (found && Object.keys(found).length !== 0) {
             items.push(found);
+        } else {
+            console.warn(`Found items for menu item: ${item.id}`);
         }
     }
+
+    console.log('Pass Items to frontend:');
+    console.log(items);
 
     return { menu, items, features, title, nestedItems };
 }

@@ -137,30 +137,38 @@ export function convertContents(
         for (const itemTag of itemTags) {
             let itemType: string | undefined = undefined;
 
-            const contentItemContainer = itemTag.hasAttribute('type');
+            let contentItemContainer = itemTag.hasAttribute('type');
+            if (itemTag.getAttribute('type') === 'heading') contentItemContainer = false;
             if (contentItemContainer) nestedItems = true;
-            itemType = String(contentItemContainer ? itemTag.getAttribute('type') : prevItemType);
+            itemType = String(
+                contentItemContainer || itemTag.getAttribute('type') === 'heading'
+                    ? itemTag.getAttribute('type')
+                    : prevItemType
+            );
             if (verbose >= 3) console.log(`itemTypes: prev: ${prevItemType} now: ${itemType} `);
 
             const id = Number(itemTag.attributes.getNamedItem('id')!.value);
             let contentContainerId: number | undefined;
-            if (contentItemContainer) {
+            if (contentItemContainer || itemType === 'heading') {
                 currentContentContainer = id;
-                contentContainerId = undefined;
+                if (itemType != 'heading') {
+                    contentContainerId = undefined;
+                } else {
+                    contentContainerId = id;
+                }
             } else {
                 contentContainerId = currentContentContainer;
             }
+
             const heading = itemTag.attributes.getNamedItem('heading')?.value
                 ? Boolean(itemTag.attributes.getNamedItem('heading')?.value)
                 : undefined;
             const title: { [lang: string]: string } = {};
-            if (!contentItemContainer) {
-                const titleTags = itemTag.getElementsByTagName('title');
-                if (titleTags?.length > 0) {
-                    for (const titleTag of titleTags) {
-                        const lang = parseLangAttribute(titleTag);
-                        title[lang] = decodeFromXml(titleTag.innerHTML);
-                    }
+            const titleTags = itemTag.getElementsByTagName('title');
+            if (titleTags?.length > 0) {
+                for (const titleTag of titleTags) {
+                    const lang = parseLangAttribute(titleTag);
+                    title[lang] = decodeFromXml(titleTag.innerHTML);
                 }
             }
 
@@ -238,6 +246,16 @@ export function convertContents(
                 for (const layoutCollectionTag of layoutCollectionTags) {
                     const id = layoutCollectionTag.attributes.getNamedItem('id')!.value;
                     layoutCollection.push(id);
+                }
+            }
+
+            let visibleItems: Array<string> | undefined = undefined;
+            const visibleItemsTags = itemTag.getElementsByTagName('visible-items');
+            if (visibleItemsTags?.length > 0) {
+                visibleItems = [];
+                for (const visibleItemsTag of visibleItemsTags) {
+                    const size = visibleItemsTag.attributes.getNamedItem('value')!.value;
+                    visibleItems.push(size);
                 }
             }
 
