@@ -34,7 +34,7 @@
 <div id="grid-{id}" class="contents-grid">
     <div class="contents-grid-row contents-grid-cols-3">
         {#each items as item}
-            <!-- GBrid items go here -->
+            <!-- Grid items go here -->
             <div
                 class="contents-grid-item-block contents-grid-item-block-base contents-link-ref"
                 id={item.id}

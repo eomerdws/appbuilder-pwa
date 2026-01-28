@@ -28,39 +28,67 @@
     function loadReferenceTextFallback(item: any) {
         console.warn('USING loadReferenceTextFallback');
     }
+
+    console.warn('ContentHeading Features: ');
+    console.warn(items);
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div id="heading-{id}">
-    {#each items as item}
-        <!-- GBrid items go here -->
-        <div id={item.id}>
-            {#if item.imageFilename}
-                <div
-                    style="{convertStyle($s['div.contents-image-block'])}{checkImageSizeCallback(
-                        item
-                    )}"
-                >
-                    <img src="{base}/{imageFolder}/{item.imageFilename}" alt={item.imageFilename} />
+    {#snippet img(item)}
+        <div
+            class="contents-image-block"
+            style="{convertStyle($s['div.contents-image-block'])}{checkImageSizeCallback(item)}"
+        >
+            <img
+                class="contents-image"
+                style={convertStyle($s['div.contents-image'])}
+                src="{base}/{imageFolder}/{item.imageFilename}"
+                alt={item.imageFilename}
+            />
+        </div>
+    {/snippet}
+
+    {#snippet text(item)}
+        <div
+            class="contents-text-block contents-text-block-base"
+            style:font-size="{$contentsFontSize}px"
+        >
+            <!-- Check for title -->
+            {#if features['show-titles'] === true}
+                <div class="contents-heading-title">
+                    {item.title[$language] ?? item.title.default ?? ''}
                 </div>
             {/if}
 
-            <div class="contents-grid-item-text-block" style:font-size="{$contentsFontSize}px">
-                <!-- Check for title -->
-                {#if features['show-titles'] === true}
-                    <div class="contents-heading-title">
-                        {item.title[$language] ?? item.title.default ?? ''}
-                    </div>
-                {/if}
+            <!-- Check for subtitles -->
+            {#if features['show-subtitles'] === true}
+                <div class="contents-heading-subtitle">
+                    {item.subtitle[$language] ?? item.subtitle.default ?? ''}
+                </div>
+            {/if}
+        </div>
+    {/snippet}
 
-                <!-- Check for subtitles -->
-                {#if features['show-subtitles'] === true}
-                    <div class="contents-heading-subtitle">
-                        {item.subtitle[$language] ?? item.subtitle.default ?? ''}
+    {#each items as item}
+        <!-- Heading items go here -->
+
+        <div id={item.id}>
+            {#if item.imageFilename}
+                {#if item.features['layout'] === 'image-left-text-right'}
+                    <div class="contents-layout-horizontal">
+                        {@render img(item)}
+                        {@render text(item)}
                     </div>
+                {:else}
+                    {@render img(item)}
                 {/if}
-            </div>
+            {/if}
+
+            {#if item.features['layout'] !== 'image-left-text-right'}
+                {@render text(item)}
+            {/if}
         </div>
     {/each}
 </div>
