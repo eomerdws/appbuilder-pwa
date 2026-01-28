@@ -28,9 +28,6 @@
     function loadReferenceTextFallback(item: any) {
         console.warn('USING loadReferenceTextFallback');
     }
-
-    console.warn('ContentHeading Features: ');
-    console.warn(items);
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->

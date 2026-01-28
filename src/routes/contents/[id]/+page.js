@@ -7,7 +7,6 @@ export async function load({ params }) {
     const features = contents.features;
     const title = contents.title;
 
-    // ISSUE: Need to find a way to be sure that the visible-items feature is showing up, but per caraousel as each carousel could have different visible-items
     const items = [];
     for (const item of menu.items) {
         let found;
@@ -17,7 +16,6 @@ export async function load({ params }) {
             // NOTE: If the item is the upper level container it has an id but no contentContainerId
             const curContainerId = contents.items.find((x) => x.id === item.id)?.id;
             if (curContainerId !== undefined || curContainerId !== null) {
-                console.log(`curContainerId: ${curContainerId}`);
                 found = contents.items.filter(
                     (x) =>
                         x.contentContainerId === curContainerId &&
@@ -35,9 +33,6 @@ export async function load({ params }) {
             console.warn(`Found items for menu item: ${item.id}`);
         }
     }
-
-    console.log('Pass Items to frontend:');
-    console.log(items);
 
     return { menu, items, features, title, nestedItems };
 }
