@@ -97,7 +97,10 @@
 </script>
 
 <div id={carouselId} class="contents-carousel no-select">
-    <div class="contents-carousel-row" style="overscroll-behavior: auto contain">
+    <div
+        class="contents-carousel-row"
+        style="overscroll-behavior: auto contain; overflow-y: hidden; scrollbar-width:none; -ms-overflow-style:none; -webkit-scrollbar: none;"
+    >
         <div class="contents-carousel-inner n2">
             {#each items as item}
                 <!-- svelte-ignore a11y_click_events_have_key_events -->
