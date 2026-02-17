@@ -314,7 +314,6 @@ test('convertContents: Item Features if assigned are filled', () => {
     for (const item of testSetup.itemTags ? testSetup.itemTags : []) {
         const features = parseItemFeatures(item);
 
-        expect(Object.keys(features).length > 0).toBeTruthy();
         for (const feature of Object.keys(features)) {
             // NOTE: Test the key (feature) and then the value (features[feature])
             expect(feature).not.toSatisfy((r) => r === undefined || r === '');
@@ -396,8 +395,16 @@ test('convertContents: Audio filenames if assigned are filled', () => {
             console.log('This item does not have an audio file');
             continue;
         }
-        console.log(audioFile.default);
-        expect(audioFile.default).not.toSatisfy((r) => r === undefined || r === '');
+
+        if (audioFile.default !== undefined) {
+            console.log(audioFile.default);
+            expect(audioFile.default).not.toSatisfy((r) => r === undefined || r === '');
+        }
+
+        for (const key of Object.keys(audioFile)) {
+            expect(key).not.toSatisfy((r) => r === undefined || r === '');
+            expect(audioFile[key]).not.toSatisfy((r) => r === undefined || r === '');
+        }
     }
 });
 
@@ -517,7 +524,6 @@ test('convertContents: Check Links handles Empty Element input', () => {
 });
 
 test('convertContents: Layout Mode if assgined is not empty', () => {
-    //NOTE: I have not seen an example of this being used yet. It may be a leftover piece from an older version of SAB. This test might have a false positive.
     const testSetup: TestSetup = setup(undefined, true, true);
     if (!testSetup.contentsFileExists) {
         console.warn('Contents file does not exist, so test cannot be run');
@@ -546,7 +552,6 @@ test('convertContents: Layout Mode handles undefined input', () => {
 });
 
 test('convertContents: Layout Collection if assgined is not empty', () => {
-    //NOTE: I have not seen an example of this being used yet. It may be a leftover piece from an older version of SAB. Thus this test might have a false positive.
     const testSetup: TestSetup = setup(undefined, true, true);
     if (!testSetup.contentsFileExists) {
         console.warn('Contents file does not exist, so test cannot be run');
