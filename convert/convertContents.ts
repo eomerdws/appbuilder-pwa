@@ -6,9 +6,9 @@ import { ConfigTaskOutput, parseLangAttribute } from './convertConfig';
 import { createHashedFile, createOutputDir, deleteOutputDir, joinUrlPath } from './fileUtils';
 import { Task, TaskOutput } from './Task';
 
-type LangContainer = { [lang: string]: string };
+export type LangContainer = { [lang: string]: string };
 
-type LinkMeta = {
+export type LinkMeta = {
     // intended to pass between functions so that there is one object passed
     linkType?: string;
     linkTarget?: string;
@@ -70,7 +70,7 @@ function parseFeatureValue(value: any): any {
 }
 
 // Nested items detection
-function isTagInnerNestedItem(tag: Element | HTMLElement | undefined): boolean {
+export function isTagInnerNestedItem(tag: Element | HTMLElement | undefined): boolean {
     if (tag === undefined) return false;
     if (tag.parentElement?.tagName === 'contents') return false; // for /contents/contents-items
     if (
@@ -88,7 +88,7 @@ function isTagInnerNestedItem(tag: Element | HTMLElement | undefined): boolean {
     );
 }
 
-function tagHasInnerNestedItems(tag: Element | HTMLElement | undefined): boolean {
+export function tagHasInnerNestedItems(tag: Element | HTMLElement | undefined): boolean {
     if (tag === undefined) return false;
 
     if (tag.children.length > 0) {
@@ -111,7 +111,7 @@ function decodeFromXml(input: string): string {
 }
 
 // Item Parsing functions
-function parseItemId(tag: Element | HTMLElement | undefined): number {
+export function parseItemId(tag: Element | HTMLElement | undefined): number {
     if (tag === undefined) {
         console.warn('parseItemId got an undefined tag');
         return 0;
@@ -119,7 +119,7 @@ function parseItemId(tag: Element | HTMLElement | undefined): number {
     return Number(tag.attributes.getNamedItem('id')!.value);
 }
 
-function parseItemType(
+export function parseItemType(
     tag: Element | HTMLElement | undefined,
     contentItemContainer: boolean,
     prevItemType: string | undefined = undefined
@@ -136,7 +136,7 @@ function parseItemType(
     return itemType;
 }
 
-function parseItemHeading(tag: Element | HTMLElement | undefined): boolean {
+export function parseItemHeading(tag: Element | HTMLElement | undefined): boolean {
     if (tag === undefined) return false;
 
     const headingAttr = tag.attributes.getNamedItem('heading')?.value;
@@ -144,7 +144,7 @@ function parseItemHeading(tag: Element | HTMLElement | undefined): boolean {
     return heading;
 }
 
-function parseItemTitle(
+export function parseItemTitle(
     tag: Element | HTMLElement | undefined,
     upperLayer: boolean,
     verbose: number
@@ -170,7 +170,7 @@ function parseItemTitle(
     return title;
 }
 
-function parseItemSubtitle(tag: Element | HTMLElement | undefined): LangContainer {
+export function parseItemSubtitle(tag: Element | HTMLElement | undefined): LangContainer {
     let subtitle: LangContainer = {};
     if (tag === undefined) return subtitle;
 
@@ -184,7 +184,7 @@ function parseItemSubtitle(tag: Element | HTMLElement | undefined): LangContaine
     return subtitle;
 }
 
-function parseItemImage(
+export function parseItemImage(
     tag: Element | HTMLElement | undefined,
     contentsDir: string,
     verbose: number,
@@ -210,7 +210,7 @@ function parseItemImage(
     return imageFilename;
 }
 
-function parseItemAudio(
+export function parseItemAudio(
     tag: Element | HTMLElement | undefined,
     contentsDir: string,
     destDir: string,
@@ -242,15 +242,17 @@ function parseItemAudio(
     return audioFilename;
 }
 
-function parseItemLink(
+export function parseItemLink(
     tag: Element | HTMLElement | undefined,
     scriptureConfig: ScriptureConfig,
     verbose: number
 ): LinkMeta {
     let link: LinkMeta = {};
     if (tag === undefined) return link;
+    if (Object.keys(tag).length === 0) return link;
 
     const linkTags = tag.getElementsByTagName('link');
+    if (verbose >= 3) console.log(linkTags);
     link.linkType = linkTags[0]?.attributes.getNamedItem('type')?.value;
     link.linkTarget = linkTags[0]?.attributes.getNamedItem('target')?.value;
     link.linkLocation = linkTags[0]?.attributes.getNamedItem('location')?.value;
@@ -279,7 +281,7 @@ function parseItemLink(
     return link;
 }
 
-function parseItemFeatures(tag: Element | HTMLElement | undefined): any {
+export function parseItemFeatures(tag: Element | HTMLElement | undefined): any {
     const features: any = {};
     if (tag === undefined) return features;
 
@@ -292,13 +294,14 @@ function parseItemFeatures(tag: Element | HTMLElement | undefined): any {
     return features;
 }
 
-function parseItemLayoutMode(tag: Element | HTMLElement | undefined): string | undefined {
+export function parseItemLayoutMode(tag: Element | HTMLElement | undefined): string | undefined {
     if (tag === undefined) return undefined;
+    if (Object.keys(tag).length === 0) return undefined;
     const layoutTags = tag.getElementsByTagName('layout');
     return layoutTags[0]?.attributes.getNamedItem('mode')?.value;
 }
 
-function parseItemLayoutCollection(
+export function parseItemLayoutCollection(
     tag: Element | HTMLElement | undefined
 ): Array<string> | undefined {
     let layoutCollection = undefined;
