@@ -13,6 +13,13 @@
                     "src/"
                 ],
                 "path": "sab_pwa_test.zip"
+            },
+            {
+                "tests": [
+                    "src/",
+                    "convert/tests/sab/"
+                ],
+                "path": "web_gospels_nested.zip"
             }
         ]
     },
