@@ -4,11 +4,17 @@ import {
     copyFileSync,
     existsSync,
     mkdirSync,
+    readdirSync,
     readFileSync,
     rmSync,
     writeFileSync
 } from 'fs';
 import { basename, extname, join, posix } from 'path';
+
+export type FileSrcDest = {
+    src: string;
+    desc: string;
+};
 
 export function getHashedName(dataDir: string, src: string) {
     const fullPath = join(dataDir, src);
@@ -23,6 +29,33 @@ export function getHashedName(dataDir: string, src: string) {
         console.error(`Error when reading ${fullPath}:\n${e}`);
         return '';
     }
+}
+
+export function getHashedFilesFromContents(dataDir: string, src: string): FileSrcDest[] {
+    const fullPath = join(dataDir, src);
+    let files: any[] = [];
+    const returnFiles: FileSrcDest[] = [];
+
+    try {
+        if (existsSync(fullPath)) {
+            files = readdirSync(fullPath);
+            for (const file of files) {
+                // TODO: ID directory and send it back through. Needs a way to create a dir in gen-assets but not here
+                const f: FileSrcDest = {
+                    src: file,
+                    desc: getHashedName(fullPath, file)
+                };
+                returnFiles.push(f);
+            }
+            return returnFiles;
+        } else {
+            console.warn(`Could not locate ${src}`);
+        }
+    } catch (e) {
+        console.error(`Error when reading ${fullPath}:\n${e}`);
+    }
+
+    return returnFiles;
 }
 
 export function getHashedNameFromContents(contents: string, src: string) {

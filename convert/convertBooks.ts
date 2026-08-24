@@ -16,9 +16,11 @@ import { freeze, postQueries, queries } from '../sab-proskomma-tools';
 import { SABProskomma } from '../src/lib/sab-proskomma';
 import type { ConfigTaskOutput } from './convertConfig';
 import { convertMarkdownsToMilestones } from './convertMarkdown';
+import type { FileSrcDest } from './fileUtils';
 import {
     createHashedFile,
     createOutputDir,
+    getHashedFilesFromContents,
     getHashedNameFromContents,
     joinUrlPath
 } from './fileUtils';
@@ -439,11 +441,13 @@ export async function convertBooks(
     const quizzes: any = {};
     /**htmlBooks by book collection*/
     const htmlBooks: any = {};
+    /**bloomBooks by book collection*/
+    const bloomBooks: any = {};
     /**array of files to be written*/
     const files: any[] = [];
 
     // copy book-related folder resources
-    ['quiz', 'songs'].forEach((folder) => {
+    ['quiz', 'songs', 'bloom-player'].forEach((folder) => {
         const folderSrcDir = path.join(dataDir, folder);
         const folderDstDir = path.join('src/gen-assets', folder);
         if (fs.existsSync(folderSrcDir)) {
@@ -499,12 +503,36 @@ export async function convertBooks(
             const collPath = join('static', 'collections', collection.id);
             createOutputDir(collPath);
         }
+
+        //check if folder exists for collection
+        const collPath = path.join('src/gen-assets', 'collections', context.bcId);
+        createOutputDir(collPath);
+
         for (const book of collection.books) {
             let bookConverted = false;
             switch (book.type) {
                 case 'audio-only':
-                case 'bloom-player':
                 case 'undefined':
+                    break;
+                case 'bloom-player':
+                    bookConverted = true;
+                    // Create specific bloom blook directory for generated assets
+                    const bloomBookPath = path.join(
+                        'src',
+                        'gen-assets',
+                        'collections',
+                        context.bcId,
+                        book.id
+                    );
+                    createOutputDir(bloomBookPath);
+                    getHashedFilesFromContents(dataDir, path.join('books', context.bcId, book.id));
+                    convertBloomBook(context, book, files);
+                    //console.log('BLOOM: ' + book.id);
+                    //console.log(book.name);
+                    displayBookId(context.bcId, book.id);
+                    //bloomBooks[context.docSet].push({ id: book.id, name: book.name });
+                    console.warn(bloomBooks);
+                    //console.warn(fs.existsSync(bloomBookPath));
                     break;
                 case 'quiz':
                     bookConverted = true;
@@ -606,9 +634,6 @@ export async function convertBooks(
                 }
             })
         );
-        //check if folder exists for collection
-        const collPath = path.join('src/gen-assets', 'collections', context.bcId);
-        createOutputDir(collPath);
         //add quizzes path if necessary
         if (quizzes[context.docSet].length > 0) {
             const qPath = path.join('src/gen-assets', 'collections', context.bcId, 'quizzes');
@@ -673,6 +698,19 @@ function convertHtmlBook(context: ConvertBookContext, book: BookConfig, files: a
     // don't want to modify config to account for filtration
     files.push({
         path: path.join('static', 'collections', context.bcId, before),
+        content
+    });
+}
+
+function convertBloomBook(context: ConvertBookContext, book: BookConfig, files: any[]) {
+    const srcFile = path.join(context.dataDir, 'books', context.bcId, book.id, book.file);
+
+    let content = fs.readFileSync(srcFile, 'utf-8');
+    const before = getHashedNameFromContents(content, book.file);
+    content = applyFilters(content, htmlFilterFunctions, context.bcId, book.id, context);
+
+    files.push({
+        path: path.join('src', 'gen-assets', 'collections', context.bcId, book.id, before),
         content
     });
 }
