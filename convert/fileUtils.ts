@@ -7,13 +7,16 @@ import {
     readdirSync,
     readFileSync,
     rmSync,
+    statSync,
     writeFileSync
 } from 'fs';
 import { basename, extname, join, posix } from 'path';
+import { a } from 'vitest/dist/chunks/suite.d.FvehnV49';
 
 export type FileSrcDest = {
+    dir: boolean;
     src: string;
-    desc: string;
+    dest: string;
 };
 
 export function getHashedName(dataDir: string, src: string) {
@@ -31,25 +34,52 @@ export function getHashedName(dataDir: string, src: string) {
     }
 }
 
-export function getHashedFilesFromContents(dataDir: string, src: string): FileSrcDest[] {
+export function getHashedFilesFromContents(
+    dataDir: string,
+    src: string,
+    recursive: boolean = false,
+    recursiveDir: string = ''
+): FileSrcDest[] {
     const fullPath = join(dataDir, src);
     let files: any[] = [];
     const returnFiles: FileSrcDest[] = [];
+
+    if (src === 'audio') {
+        console.log(recursive);
+        console.warn(fullPath);
+        console.log(recursiveDir);
+    }
 
     try {
         if (existsSync(fullPath)) {
             files = readdirSync(fullPath);
             for (const file of files) {
-                // TODO: ID directory and send it back through. Needs a way to create a dir in gen-assets but not here
+                const stats = statSync(join(fullPath, file));
+
+                let dest: string;
+                if (recursive) {
+                    dest = stats.isFile()
+                        ? getHashedName(fullPath, join(recursiveDir, file))
+                        : join(recursiveDir, file);
+                } else {
+                    dest = stats.isFile() ? getHashedName(fullPath, file) : file;
+                }
+
                 const f: FileSrcDest = {
-                    src: file,
-                    desc: getHashedName(fullPath, file)
+                    dir: stats.isDirectory(),
+                    src: recursive ? join(recursiveDir, file) : file,
+                    dest: dest
                 };
+
                 returnFiles.push(f);
+
+                if (stats.isDirectory()) {
+                    getHashedFilesFromContents(fullPath, file, true, file);
+                }
             }
             return returnFiles;
         } else {
-            console.warn(`Could not locate ${src}`);
+            console.warn(`Could not locate ${src}, full path: ${fullPath}`);
         }
     } catch (e) {
         console.error(`Error when reading ${fullPath}:\n${e}`);
