@@ -81,7 +81,7 @@
     let player;
 </script>
 
-<div class="grid grid-rows-[auto_1fr_auto]" style="height:auto; height:auto">
+<div class="h-screen">
     <BloomPlayerElement
         bind:this={player}
         playerUrl="/src/gen-assets/bloom-player/bloomplayer.htm"
