@@ -2,7 +2,7 @@
     import { beforeNavigate, goto, invalidateAll } from '$app/navigation';
     import { scriptureConfig } from '$assets/config';
     import contents from '$assets/contents';
-    import type { ScriptureConfig } from '$config';
+    import type { BloomBook, BookCollectionConfig, ScriptureConfig } from '$config';
     import BloomPlayerElement from '$lib/components/BloomPlayerElement.svelte';
     import BookSelector from '$lib/components/BookSelector.svelte';
     import BottomNavigationBar from '$lib/components/BottomNavigationBar.svelte';
@@ -32,23 +32,21 @@
     import type { PageData } from './$types';
 
     interface Props {
-        showBackButton?: boolean;
-        start?: Snippet;
-        center?: Snippet;
-        end?: Snippet;
-        backNavigation?: (e: Event, routeId: string) => void;
+        data: PageData;
+        // showBackButton?: boolean;
+        // start?: Snippet;
+        // center?: Snippet;
+        // end?: Snippet;
+        // backNavigation?: (e: Event, routeId: string) => void;
     }
+
+    let { data }: Props = $props();
 
     let showOverlowMenu = $state(false);
     function handleMenuClick() {
         showOverlowMenu = false;
     }
-
-    const book = $derived(
-        scriptureConfig?.bookCollections
-            ?.find((x) => x.id === $refs.collection)
-            ?.books.find((x) => x.id === $refs.book)
-    );
+    const book = data.book;
     const bookType = $derived(book?.type);
     $effect(() => {
         if (bookType === 'bloom-player') {
@@ -68,17 +66,17 @@
     );
 
     let player;
-    let bookUrl = book?.hashedFileName ?? '';
-    // console.log(book);
-    // console.log(scriptureConfig);
-    // console.log($refs);
+    let bookUrl = `/src/gen-assets/collections/${data.collection}/${data.id}/${book?.file ?? ''}`;
+    console.warn('PROPS:');
+    console.log(data);
+    console.warn('BOOK:');
+    console.log(book);
 </script>
 
 <div class="h-screen">
     <BloomPlayerElement
         bind:this={player}
         playerUrl="/src/gen-assets/bloom-player/bloomplayer.htm"
-        lang="book"
         {bookUrl}
     />
 </div>
