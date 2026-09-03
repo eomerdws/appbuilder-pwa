@@ -70,10 +70,10 @@
     function buildSrc(): string {
         const params = new URLSearchParams();
         params.set('url', bookUrl);
-        if (lang) params.set('lang', lang);
+        if (lang) {params.set('lang', lang);}
         params.set('paused', String(paused));
         params.set('autoplay', autoplay);
-        if (startPage !== undefined) params.set('start-page', String(startPage));
+        if (startPage !== undefined) {params.set('start-page', String(startPage));}
         params.set('allowToggleAppBar', String(allowToggleAppBar));
         params.set('initiallyShowAppBar', String(initiallyShowAppBar));
         params.set('showBackButton', String(showBackButton));
@@ -127,8 +127,8 @@
 
     function handleWindowMessage(event: MessageEvent) {
         // Only handle messages from our own iframe.
-        if (!iframeEl || event.source !== iframeEl.contentWindow) return;
-        if (!event.data || typeof event.data !== 'string') return;
+        if (!iframeEl || event.source !== iframeEl.contentWindow) {return;}
+        if (!event.data || typeof event.data !== 'string') {return;}
 
         let message: any;
         try {
@@ -138,7 +138,7 @@
         }
 
         const { messageType, ...detail } = message ?? {};
-        if (!messageType) return;
+        if (!messageType) {return;}
 
         dispatch(messageType as any, detail);
     }

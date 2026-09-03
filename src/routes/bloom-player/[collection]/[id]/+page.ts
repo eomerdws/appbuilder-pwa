@@ -2,7 +2,7 @@ import config from "$assets/config";
 import type { ScriptureConfig } from "$config";
 import type { PageLoad } from "./$types";
 
-export const load: PageLoad = async ({ params, fetch }) => {
+export const load: PageLoad = async ({ params }) => {
   const id = params.id;
   const collection = params.collection;
 

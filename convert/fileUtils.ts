@@ -40,7 +40,7 @@ export function getFilesRecursively(
     dest: string,
     recursiveDir: string = ''
 ): FileSrcDest[] {
-    let srcFullPath = join(dataDir, src);
+    const srcFullPath = join(dataDir, src);
     let files: any[] = [];
     const returnFiles: FileSrcDest[] = [];
 
