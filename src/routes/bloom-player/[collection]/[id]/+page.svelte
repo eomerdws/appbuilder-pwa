@@ -78,7 +78,7 @@
     <BloomPlayerElement
         bind:this={player}
         playerUrl="/src/gen-assets/bloom-player/bloomplayer.htm"
-        lang="{book?.hashedFileName},"
+        lang="book"
         {bookUrl}
     />
 </div>
