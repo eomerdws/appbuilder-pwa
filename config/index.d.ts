@@ -106,6 +106,16 @@ export type BookCollectionConfig = {
     collectionDescription?: string;
 };
 
+export type BloomBook = {
+    id: string;
+    bloomId?: string;
+    format?: string;
+    name?: string;
+    file?: string;
+    fontChoice?: string;
+    features?: Map<string, string>;
+};
+
 export type AudioSource = {
     type: string;
     name: string;

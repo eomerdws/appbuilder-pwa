@@ -408,12 +408,14 @@ function applyFilters(
 // 1. compress the chapter/verse map, if it exists
 // 2. add quizzes to entry, if defined for docset
 // 3. add htmlBooks to entry, if defined for docset
-function transformCatalogEntry(entry: any, quizzes: any, htmlBooks: any): any {
+// 4. add bloomBooks to entry, if defined for docset
+function transformCatalogEntry(entry: any, quizzes: any, htmlBooks: any, bloomBooks: any): any {
     const ds = postQueries.parseChapterVerseMapInDocSets({
         docSets: [entry.data.docSets[0]]
     })[0];
     ds.quizzes = quizzes[ds.id];
     ds.htmlBooks = htmlBooks[ds.id];
+    ds.bloomBooks = bloomBooks[ds.id];
     return ds;
 }
 
@@ -498,6 +500,7 @@ export async function convertBooks(
         //add empty array of quizzes for book collection
         quizzes[context.docSet] = [];
         htmlBooks[context.docSet] = [];
+        bloomBooks[context.docSet] = [];
         if (collection.books.find((b) => b.format === 'html')) {
             const illPath = join('static', 'illustrations');
             createOutputDir(illPath);
@@ -517,6 +520,8 @@ export async function convertBooks(
                     break;
                 case 'bloom-player':
                     bookConverted = true;
+                    bloomBooks[context.docSet].push({ id: book.id, name: book.name });
+
                     // Create specific bloom blook directory for generated assets
                     const bloomBookPath = path.join(
                         'src',
@@ -533,10 +538,10 @@ export async function convertBooks(
                         path.join('src', 'gen-assets', 'collections', context.bcId, book.id)
                     );
 
-                    console.error(`BloomFiles Length: ${bloomFiles.length}`);
+                    console.error(`BloomFiles Length: ${bloomFiles.length}`); //FIXME: Delete this before production
 
                     convertBloomBook(context, book, bloomFiles, files);
-                    //displayBookId(context.bcId, book.id);
+                    displayBookId(context.bcId, book.id);
                     break;
                 case 'quiz':
                     bookConverted = true;
@@ -651,7 +656,7 @@ export async function convertBooks(
     entries.forEach((entry) => {
         fs.writeFileSync(
             path.join(catalogPath, entry.data.docSets[0].id + '.json'),
-            JSON.stringify(transformCatalogEntry(entry, quizzes, htmlBooks))
+            JSON.stringify(transformCatalogEntry(entry, quizzes, htmlBooks, bloomBooks))
         );
     });
     if (verbose) {
@@ -722,7 +727,7 @@ function convertBloomBook(
         content
     });
 
-    console.warn(bloomFiles.length);
+    console.warn(bloomFiles.length); // FIXME: Delete me before Production
 
     for (const bloomFile of bloomFiles) {
         if (bloomFile.dir && bloomFile.dest !== undefined) {

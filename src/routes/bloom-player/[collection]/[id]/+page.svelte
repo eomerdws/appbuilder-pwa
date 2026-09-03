@@ -39,16 +39,6 @@
         backNavigation?: (e: Event, routeId: string) => void;
     }
 
-    // let scrollingUp = $state(true);
-    // let savedScrollPosition = 0;
-    // let lastChangeTime = 0;
-    //
-    // function saveScrollPosition() {
-    //     const now = Date.now();
-    //     const oldSavedScroll     scrollingDiv.scrollTop;
-    //     const newScrollin
-    // }
-
     let showOverlowMenu = $state(false);
     function handleMenuClick() {
         showOverlowMenu = false;
@@ -59,7 +49,6 @@
             ?.find((x) => x.id === $refs.collection)
             ?.books.find((x) => x.id === $refs.book)
     );
-
     const bookType = $derived(book?.type);
     $effect(() => {
         if (bookType === 'bloom-player') {
@@ -79,13 +68,17 @@
     );
 
     let player;
+    let bookUrl = book?.hashedFileName ?? '';
+    // console.log(book);
+    // console.log(scriptureConfig);
+    // console.log($refs);
 </script>
 
 <div class="h-screen">
     <BloomPlayerElement
         bind:this={player}
         playerUrl="/src/gen-assets/bloom-player/bloomplayer.htm"
-        lang="book.language,"
-        bookUrl="/collections/C03/B001/Poem - The Moon.htm"
+        lang="{book?.hashedFileName},"
+        {bookUrl}
     />
 </div>
