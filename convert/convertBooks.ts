@@ -428,7 +428,7 @@ type ConvertBookContext = {
     bcId: string;
 };
 
-const unsupportedBookTypes = ['audio-only', 'bloom-player', 'quiz', 'undefined'];
+const unsupportedBookTypes = ['audio-only', 'quiz', 'undefined'];
 export async function convertBooks(
     dataDir: string,
     scriptureConfig: ScriptureConfig,
@@ -726,8 +726,6 @@ function convertBloomBook(
         path: path.join('src', 'gen-assets', 'collections', context.bcId, book.id, book.file),
         content
     });
-
-    console.warn(bloomFiles.length); // FIXME: Delete me before Production
 
     for (const bloomFile of bloomFiles) {
         if (bloomFile.dir && bloomFile.dest !== undefined) {
