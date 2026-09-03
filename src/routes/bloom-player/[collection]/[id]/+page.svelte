@@ -47,12 +47,6 @@
         showOverlowMenu = false;
     }
     const book = data.book;
-    const bookType = $derived(book?.type);
-    $effect(() => {
-        if (bookType === 'bloom-player') {
-            console.log('Bloom book!');
-        }
-    });
 
     function backNavigation() {
         if ($contentsStack.length > 0) {
@@ -80,3 +74,11 @@
         {bookUrl}
     />
 </div>
+
+<style>
+    :global(bloom-player) {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+</style>
