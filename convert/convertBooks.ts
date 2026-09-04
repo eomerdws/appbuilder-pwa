@@ -713,7 +713,7 @@ function convertHtmlBook(context: ConvertBookContext, book: BookConfig, files: a
 
 function replaceBloomLink(context: ConvertBookContext, book: BookConfig, content: string): string {
     let newContent = content.replace(
-        /src="([a-zA-Z\.])"/gi,
+        /src="([^"]+)"/gi,
         `src="/src/gen-assets/collections/${context.bcId}/${book.id}/$1"`
     );
 
@@ -730,12 +730,12 @@ function convertBloomBook(
     const srcFile = path.join(bookLocation, book.file);
     let distExists: boolean = false;
     let content = fs.readFileSync(srcFile, 'utf-8');
-    content = applyFilters(content, htmlFilterFunctions, context.bcId, book.id, context);
+    //content = applyFilters(content, htmlFilterFunctions, context.bcId, book.id, context);
 
-    files.push({
-        path: path.join('src', 'gen-assets', 'collections', context.bcId, book.id, book.file),
-        content
-    });
+    // files.push({
+    //     path: path.join('src', 'gen-assets', 'collections', context.bcId, book.id, book.file),
+    //     content
+    // });
 
     for (const bloomFile of bloomFiles) {
         if (bloomFile.dir && bloomFile.dest !== undefined) {
