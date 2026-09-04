@@ -711,6 +711,15 @@ function convertHtmlBook(context: ConvertBookContext, book: BookConfig, files: a
     });
 }
 
+function replaceBloomLink(context: ConvertBookContext, book: BookConfig, content: string): string {
+    let newContent = content.replace(
+        /src="([a-zA-Z\.])"/gi,
+        `src="/src/gen-assets/collections/${context.bcId}/${book.id}/$1"`
+    );
+
+    return newContent;
+}
+
 function convertBloomBook(
     context: ConvertBookContext,
     book: BookConfig,
@@ -719,6 +728,7 @@ function convertBloomBook(
 ) {
     const bookLocation = path.join(context.dataDir, 'books', context.bcId, book.id);
     const srcFile = path.join(bookLocation, book.file);
+    let distExists: boolean = false;
     let content = fs.readFileSync(srcFile, 'utf-8');
     content = applyFilters(content, htmlFilterFunctions, context.bcId, book.id, context);
 
@@ -731,9 +741,33 @@ function convertBloomBook(
         if (bloomFile.dir && bloomFile.dest !== undefined) {
             createOutputDir(bloomFile.dest);
         } else {
+            let newContent = fs.readFileSync(bloomFile.src, 'utf-8');
+            const ext = bloomFile.src.split('.').pop() ?? '';
+            if (ext !== undefined && ['htm', 'html', 'css'].includes(ext)) {
+                newContent = replaceBloomLink(context, book, newContent);
+            }
+
+            if (bloomFile.src.includes('.distribution')) {
+                distExists = true;
+            }
+
             files.push({
                 path: bloomFile.dest,
-                content: fs.readFileSync(bloomFile.src)
+                content: newContent
+            });
+        }
+
+        if (!distExists) {
+            files.push({
+                path: path.join(
+                    'src',
+                    'gen-assets',
+                    'collections',
+                    context.bcId,
+                    book.id,
+                    '.distribution'
+                ),
+                content: 'bloom-web'
             });
         }
     }
