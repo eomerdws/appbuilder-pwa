@@ -712,7 +712,7 @@ function convertHtmlBook(context: ConvertBookContext, book: BookConfig, files: a
 }
 
 function replaceBloomLink(context: ConvertBookContext, book: BookConfig, content: string): string {
-    let newContent = content.replace(
+    const newContent = content.replace(
         /src="([^"]+)"/gi,
         `src="/src/gen-assets/collections/${context.bcId}/${book.id}/$1"`
     );
