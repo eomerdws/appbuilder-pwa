@@ -34,48 +34,33 @@ export function getHashedName(dataDir: string, src: string) {
     }
 }
 
-export function getFilesRecursively(
-    dataDir: string,
-    src: string,
-    dest: string,
-    recursiveDir: string = ''
-): FileSrcDest[] {
+export function getFilesRecursively(dataDir: string, src: string, dest: string): FileSrcDest[] {
     const srcFullPath = join(dataDir, src);
     let files: any[] = [];
     const returnFiles: FileSrcDest[] = [];
 
-    const recursive: boolean = recursiveDir !== undefined || recursiveDir !== '';
-
-    console.warn(`src: ${src} dest: ${dest} recursive: ${recursive}`);
     try {
         if (existsSync(srcFullPath)) {
             files = readdirSync(srcFullPath);
             for (const file of files) {
                 const stats = statSync(join(srcFullPath, file));
-
-                let fullDest: string;
-                fullDest = join(dest, file);
-                // if (recursive) {
-                //     fullDest = stats.isFile() ? join(dest, file) : join(dest, file);
-                // } else {
-                //     fullDest = stats.isFile() ? file : file;
-                // }
+                const fullDest = join(dest, file);
 
                 const f: FileSrcDest = {
                     dir: stats.isDirectory(),
-                    src: recursive ? join(srcFullPath, file) : file,
+                    src: join(srcFullPath, file),
                     dest: fullDest
                 };
 
                 returnFiles.push(f);
 
                 if (stats.isDirectory()) {
-                    getFilesRecursively(dataDir, srcFullPath, join(fullDest, file), file);
+                    returnFiles.push(...getFilesRecursively(dataDir, join(src, file), fullDest));
                 }
             }
             return returnFiles;
         } else {
-            console.warn(`Could not locate ${src}, full path: ${src}`);
+            console.warn(`Could not locate ${src}, full path: ${srcFullPath}`);
         }
     } catch (e) {
         console.error(`Error when reading ${src}:\n${e}`);

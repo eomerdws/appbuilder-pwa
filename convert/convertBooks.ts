@@ -726,16 +726,7 @@ function convertBloomBook(
     bloomFiles: FileSrcDest[],
     files: any[]
 ) {
-    const bookLocation = path.join(context.dataDir, 'books', context.bcId, book.id);
-    const srcFile = path.join(bookLocation, book.file);
     let distExists: boolean = false;
-    let content = fs.readFileSync(srcFile, 'utf-8');
-    //content = applyFilters(content, htmlFilterFunctions, context.bcId, book.id, context);
-
-    // files.push({
-    //     path: path.join('src', 'gen-assets', 'collections', context.bcId, book.id, book.file),
-    //     content
-    // });
 
     for (const bloomFile of bloomFiles) {
         if (bloomFile.dir && bloomFile.dest !== undefined) {
