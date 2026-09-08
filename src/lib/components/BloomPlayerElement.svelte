@@ -216,31 +216,31 @@
         const translateX = Math.max((winWidth - actualWidth) / 2, 0);
         const translateY = Math.max((winHeight - actualHeight) / 2, 0);
 
-        // Rather than fight bloom-player's own (wrong) .bloomPlayer transform
-        // math, force the final rendered pixel size directly on .bloom-page
-        // and its ancestors, bypassing the broken calculation entirely.
+        // IMPORTANT: .bloom-page's contents (.marginBox and everything inside
+        // it - image containers, text boxes, etc.) are laid out in fixed,
+        // absolute mm/px units matching the page's *native* size - they are
+        // NOT sized as percentages of .bloom-page. bloom-player's own
+        // approach (see scale-style-sheet in bloomPlayer-controls) is to
+        // leave .bloom-page at its native size and instead scale the whole
+        // .bloomPlayer wrapper down/up with a CSS transform. If we instead
+        // resize .bloom-page itself to the final on-screen size (as an
+        // earlier version of this fix did) and disable that transform, every
+        // fixed-mm/px descendant keeps its native-size box inside a
+        // differently-sized page, so content (images included) ends up
+        // wrongly positioned/sized - effectively invisible - even though it
+        // loaded fine. So we replicate bloom-player's own transform-based
+        // approach here, just with a correctly computed scale factor,
+        // leaving .bloom-page's native sizing untouched.
         const newCss = `
             .bloomPlayer {
-                width: 100% !important;
-                transform: none !important;
+                width: ${nativeWidth}px !important;
+                transform-origin: left top !important;
+                transform: translate(${translateX}px, ${translateY}px) scale(${scaleFactor}) !important;
                 margin-left: 0 !important;
             }
             .bloomPlayer-page, .swiper-slide {
-                height: ${winHeight}px !important;
+                height: ${nativeHeight}px !important;
                 overflow: hidden !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }
-            .bloom-page {
-                width: ${actualWidth}px !important;
-                height: ${actualHeight}px !important;
-                min-width: 0 !important;
-                max-width: none !important;
-                min-height: 0 !important;
-                max-height: none !important;
-                margin: 0 !important;
-                flex: none !important;
             }
         `;
 
