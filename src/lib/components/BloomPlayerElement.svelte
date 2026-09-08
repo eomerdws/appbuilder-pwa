@@ -70,10 +70,14 @@
     function buildSrc(): string {
         const params = new URLSearchParams();
         params.set('url', bookUrl);
-        if (lang) {params.set('lang', lang);}
+        if (lang) {
+            params.set('lang', lang);
+        }
         params.set('paused', String(paused));
         params.set('autoplay', autoplay);
-        if (startPage !== undefined) {params.set('start-page', String(startPage));}
+        if (startPage !== undefined) {
+            params.set('start-page', String(startPage));
+        }
         params.set('allowToggleAppBar', String(allowToggleAppBar));
         params.set('initiallyShowAppBar', String(initiallyShowAppBar));
         params.set('showBackButton', String(showBackButton));
@@ -174,7 +178,9 @@
 
     function getPageSizeMm(page: HTMLElement): { width: number; height: number } | null {
         for (const cls of page.classList) {
-            if (PAGE_SIZE_MM[cls]) {return PAGE_SIZE_MM[cls];}
+            if (PAGE_SIZE_MM[cls]) {
+                return PAGE_SIZE_MM[cls];
+            }
         }
         return null;
     }
@@ -182,19 +188,27 @@
     function applyScaleFix() {
         const doc = iframeEl?.contentDocument;
         const win = iframeEl?.contentWindow;
-        if (!doc || !win) {return;}
+        if (!doc || !win) {
+            return;
+        }
 
         const page = getActiveBloomPage(doc);
-        if (!page) {return;}
+        if (!page) {
+            return;
+        }
         const sizeMm = getPageSizeMm(page);
-        if (!sizeMm) {return;}
+        if (!sizeMm) {
+            return;
+        }
 
         const nativeWidth = sizeMm.width * PX_PER_MM;
         const nativeHeight = sizeMm.height * PX_PER_MM;
 
         const winWidth = win.innerWidth;
         const winHeight = win.innerHeight;
-        if (!winWidth || !winHeight) {return;}
+        if (!winWidth || !winHeight) {
+            return;
+        }
 
         const scaleFactor = Math.min(winWidth / nativeWidth, winHeight / nativeHeight);
         const actualWidth = nativeWidth * scaleFactor;
@@ -230,7 +244,9 @@
             }
         `;
 
-        if (scaleFixStyleEl?.textContent === newCss) {return;}
+        if (scaleFixStyleEl?.textContent === newCss) {
+            return;
+        }
 
         if (!scaleFixStyleEl) {
             scaleFixStyleEl = doc.createElement('style');
@@ -248,7 +264,9 @@
     function setupScaleFix() {
         const doc = iframeEl?.contentDocument;
         const win = iframeEl?.contentWindow;
-        if (!doc || !win) {return;}
+        if (!doc || !win) {
+            return;
+        }
 
         applyScaleFix();
 
@@ -258,9 +276,13 @@
         if (doc.head && !scaleFixObserver) {
             scaleFixObserver = new MutationObserver((mutations) => {
                 const isOwnEdit = mutations.every(
-                    (m) => scaleFixStyleEl && (m.target === scaleFixStyleEl || scaleFixStyleEl.contains(m.target))
+                    (m) =>
+                        scaleFixStyleEl &&
+                        (m.target === scaleFixStyleEl || scaleFixStyleEl.contains(m.target))
                 );
-                if (!isOwnEdit) {applyScaleFix();}
+                if (!isOwnEdit) {
+                    applyScaleFix();
+                }
             });
             scaleFixObserver.observe(doc.head, {
                 childList: true,
@@ -287,8 +309,12 @@
 
     function handleWindowMessage(event: MessageEvent) {
         // Only handle messages from our own iframe.
-        if (!iframeEl || event.source !== iframeEl.contentWindow) {return;}
-        if (!event.data) {return;}
+        if (!iframeEl || event.source !== iframeEl.contentWindow) {
+            return;
+        }
+        if (!event.data) {
+            return;
+        }
 
         // bloom-player's externalContext.ts posts messages as plain objects
         // via window.parent.postMessage(message, "*") - not JSON strings -
@@ -308,7 +334,9 @@
         }
 
         const { messageType, ...detail } = message ?? {};
-        if (!messageType) {return;}
+        if (!messageType) {
+            return;
+        }
 
         if (messageType === 'reportBookProperties') {
             setupScaleFix();
@@ -322,7 +350,9 @@
     });
 
     // A new src means a new book/iframe document - drop the old fix state.
-    $: if (src) {teardownScaleFix();}
+    $: if (src) {
+        teardownScaleFix();
+    }
 
     onDestroy(() => {
         pause();

@@ -61,7 +61,7 @@
 
     let player;
     let bookUrl = `/src/gen-assets/collections/${data.collection}/${data.id}/${book?.file ?? ''}`;
-    let lang: string = data?.bookCollection?.languageCode;
+    let lang: string = data?.bookCollection?.languageCode ?? '';
     console.warn('PROPS:');
     console.log(data);
     console.warn('BOOK:');
