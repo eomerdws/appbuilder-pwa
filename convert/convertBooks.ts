@@ -741,10 +741,14 @@ function convertBloomBook(
         if (bloomFile.dir && bloomFile.dest !== undefined) {
             createOutputDir(bloomFile.dest);
         } else {
-            let newContent = fs.readFileSync(bloomFile.src, 'utf-8');
+            let newContent;
             const ext = bloomFile.src.split('.').pop() ?? '';
-            if (ext !== undefined && ['htm', 'html', 'css'].includes(ext)) {
+            if (ext !== undefined && ['htm', 'js', 'json', 'txt', 'html', 'css'].includes(ext)) {
+                newContent = fs.readFileSync(bloomFile.src, 'utf-8');
                 newContent = replaceBloomLink(context, book, newContent);
+            } else {
+                // read binary files
+                newContent = fs.readFileSync(bloomFile.src);
             }
 
             if (bloomFile.src.includes('.distribution')) {
