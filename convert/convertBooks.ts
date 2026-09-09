@@ -753,6 +753,8 @@ function convertBloomBook(
         }
 
         if (!distExists) {
+            // if .distribution is missing on the web version it has a console error
+            // App Builders removes this file. Simply adding it back with the text: 'bloom-web' fixes this issue
             files.push({
                 path: path.join(
                     'src',
