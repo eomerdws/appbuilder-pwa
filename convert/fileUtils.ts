@@ -11,7 +11,6 @@ import {
     writeFileSync
 } from 'fs';
 import { basename, extname, join, posix } from 'path';
-import { a } from 'vitest/dist/chunks/suite.d.FvehnV49';
 
 export type FileSrcDest = {
     dir: boolean;
@@ -25,7 +24,7 @@ export function getHashedName(dataDir: string, src: string) {
         if (existsSync(fullPath)) {
             return getHashedNameFromContents(String(readFileSync(fullPath)), src);
         } else {
-            console.warn(`Could not locate ${src}`);
+            console.warn(`Could not locate ${fullPath}`);
             return '';
         }
     } catch (e) {
@@ -44,7 +43,10 @@ export function getFilesRecursively(dataDir: string, src: string, dest: string):
             files = readdirSync(srcFullPath);
             for (const file of files) {
                 const stats = statSync(join(srcFullPath, file));
-                const fullDest = join(dest, file);
+                const hashedName: string = stats.isDirectory()
+                    ? '' // intended that it will not be used because stats.isDirectory check should be used
+                    : basename(getHashedName(dataDir, join(src, file)));
+                const fullDest = stats.isDirectory() ? join(dest, file) : join(dest, hashedName);
 
                 const f: FileSrcDest = {
                     dir: stats.isDirectory(),

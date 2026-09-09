@@ -538,8 +538,6 @@ export async function convertBooks(
                         path.join('src', 'gen-assets', 'collections', context.bcId, book.id)
                     );
 
-                    console.error(`BloomFiles Length: ${bloomFiles.length}`); //FIXME: Delete this before production
-
                     convertBloomBook(context, book, bloomFiles, files);
                     displayBookId(context.bcId, book.id);
                     break;
@@ -735,6 +733,7 @@ function convertBloomBook(
             let newContent;
             const ext = bloomFile.src.split('.').pop() ?? '';
             if (ext !== undefined && ['htm', 'js', 'json', 'txt', 'html', 'css'].includes(ext)) {
+                // TODO: Write hashed filenames to the htm and css files
                 newContent = fs.readFileSync(bloomFile.src, 'utf-8');
                 newContent = replaceBloomLink(context, book, newContent);
             } else {
@@ -746,6 +745,7 @@ function convertBloomBook(
                 distExists = true;
             }
 
+            console.log(bloomFile.dest); //FIX: REMOVE ME
             files.push({
                 path: bloomFile.dest,
                 content: newContent
@@ -766,8 +766,6 @@ function convertBloomBook(
             });
         }
     }
-
-    //console.error(`Length of Files to convertBloomBook: ${files.length}`); // TODO: Delete me before production
 }
 
 function convertQuizBook(context: ConvertBookContext, book: BookConfig): Quiz {
