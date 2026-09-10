@@ -2,6 +2,7 @@
 ///<reference path="./proskomma.d.ts"/>
 
 import * as fs from 'fs';
+import { existsSync, readdirSync, statSync } from 'fs';
 import path, { basename, extname, join } from 'path';
 import type {
     BookConfig,
@@ -20,7 +21,6 @@ import type { FileSrcDest } from './fileUtils';
 import {
     createHashedFile,
     createOutputDir,
-    getFilesRecursively,
     getHashedName,
     getHashedNameFromContents,
     joinUrlPath
@@ -534,7 +534,7 @@ export async function convertBooks(
                     );
                     createOutputDir(bloomBookPath);
 
-                    const bloomFiles: FileSrcDest[] = getFilesRecursively(
+                    const bloomFiles: FileSrcDest[] = getBloomFilesRecursively(
                         dataDir,
                         path.join('books', context.bcId, book.id),
                         path.join('src', 'gen-assets', 'collections', context.bcId, book.id)
@@ -542,7 +542,6 @@ export async function convertBooks(
 
                     convertBloomBook(context, book, bloomFiles, files, verbose);
                     displayBookId(context.bcId, book.id);
-                    console.log(`\nbook.file under case 'bloom-player' ${book.file}`); //FIX: Remove me before PR
 
                     bloomBooks[context.docSet].push({ id: book.id, name: book.name });
                     break;
@@ -714,13 +713,53 @@ function convertHtmlBook(context: ConvertBookContext, book: BookConfig, files: a
     });
 }
 
-function replaceBloomLink(context: ConvertBookContext, book: BookConfig, content: string): string {
-    const newContent = content.replace(
-        /src="([^"]+)"/gi,
-        `src="/src/gen-assets/collections/${context.bcId}/${book.id}/$1"`
-    );
+function replaceBloomLink(search: string, replace: string, content: string): string {
+    const newContent = content.replace(/${search}/gi, `${replace}`);
 
     return newContent;
+}
+
+function getBloomFilesRecursively(dataDir: string, src: string, dest: string): FileSrcDest[] {
+    const srcFullPath = join(dataDir, src);
+    let files: any[] = [];
+    const returnFiles: FileSrcDest[] = [];
+
+    try {
+        if (existsSync(srcFullPath)) {
+            files = readdirSync(srcFullPath);
+            for (const file of files) {
+                const stats = statSync(join(srcFullPath, file));
+                const hashedName: string = stats.isDirectory()
+                    ? '' // intended that it will not be used because stats.isDirectory check should be used
+                    : basename(getHashedName(dataDir, join(src, file)));
+                const fullDest = stats.isDirectory() ? join(dest, file) : join(dest, hashedName);
+
+                const f: FileSrcDest = {
+                    dir: stats.isDirectory(),
+                    src: join(srcFullPath, file),
+                    dest: fullDest
+                };
+
+                console.log(`File: ${file}`);
+                console.log(f);
+
+                returnFiles.push(f);
+
+                if (stats.isDirectory()) {
+                    returnFiles.push(
+                        ...getBloomFilesRecursively(dataDir, join(src, file), fullDest)
+                    );
+                }
+            }
+            return returnFiles;
+        } else {
+            console.warn(`Could not locate ${src}, full path: ${srcFullPath}`);
+        }
+    } catch (e) {
+        console.error(`Error when reading ${src}:\n${e}`);
+    }
+
+    return returnFiles;
 }
 
 function convertBloomBook(
@@ -732,7 +771,7 @@ function convertBloomBook(
 ) {
     let distExists: boolean = false;
     let bookContent: string | undefined = undefined;
-    const fileChanges: string[] = [];
+    const fileChanges: FileSrcDest[] = [];
 
     for (const bloomFile of bloomFiles) {
         if (bloomFile.dir && bloomFile.dest !== undefined) {
@@ -751,6 +790,7 @@ function convertBloomBook(
                     bookContent = newContent;
                     continue;
                 } else {
+                    fileChanges.push(bloomFile);
                 }
             } else {
                 // read binary files
@@ -766,34 +806,39 @@ function convertBloomBook(
                 content: newContent
             });
         }
-
-        if (fileChanges.length > 0 && bookContent !== undefined) {
-            if (verbose >= 3) console.log(`Replace links for ${book.name}`);
-            bookContent = replaceBloomLink(context, book, bookContent);
-
-            if (verbose >= 3)
-                console.log(`Save bloom html file for ${book.name} to ${bloomFile.dest}`);
-            files.push({
-                path: bloomFile.dest,
-                content: bookContent
-            });
-        }
-        if (!distExists) {
-            // if .distribution is missing on the web version it has a console error
-            // App Builders removes this file. Simply adding it back with the text: 'bloom-web' fixes this issue
-            files.push({
-                path: path.join(
-                    'src',
-                    'gen-assets',
-                    'collections',
-                    context.bcId,
-                    book.id,
-                    '.distribution'
-                ),
-                content: 'bloom-web'
-            });
+    }
+    if (!distExists) {
+        // if .distribution is missing on the web version it has a console error
+        // App Builders removes this file. Simply adding it back with the text: 'bloom-web' fixes this issue
+        files.push({
+            path: path.join(
+                'src',
+                'gen-assets',
+                'collections',
+                context.bcId,
+                book.id,
+                '.distribution'
+            ),
+            content: 'bloom-web'
+        });
+    }
+    if (fileChanges.length > 0 && bookContent !== undefined) {
+        if (verbose >= 3) console.log(`Replace links for ${book.name}`);
+        for (const fileChange of fileChanges) {
+            bookContent = replaceBloomLink(
+                fileChange.src.split('.').pop() ?? '',
+                fileChange.dest,
+                bookContent
+            );
         }
     }
+
+    if (verbose >= 3)
+        console.log(`Save bloom html file for ${book.name} --> ${book.hashedFileName}`);
+    files.push({
+        path: book.hashedFileName,
+        content: bookContent
+    });
 }
 
 function convertQuizBook(context: ConvertBookContext, book: BookConfig): Quiz {

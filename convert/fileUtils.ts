@@ -33,44 +33,6 @@ export function getHashedName(dataDir: string, src: string) {
     }
 }
 
-export function getFilesRecursively(dataDir: string, src: string, dest: string): FileSrcDest[] {
-    const srcFullPath = join(dataDir, src);
-    let files: any[] = [];
-    const returnFiles: FileSrcDest[] = [];
-
-    try {
-        if (existsSync(srcFullPath)) {
-            files = readdirSync(srcFullPath);
-            for (const file of files) {
-                const stats = statSync(join(srcFullPath, file));
-                const hashedName: string = stats.isDirectory()
-                    ? '' // intended that it will not be used because stats.isDirectory check should be used
-                    : basename(getHashedName(dataDir, join(src, file)));
-                const fullDest = stats.isDirectory() ? join(dest, file) : join(dest, hashedName);
-
-                const f: FileSrcDest = {
-                    dir: stats.isDirectory(),
-                    src: join(srcFullPath, file),
-                    dest: fullDest
-                };
-
-                returnFiles.push(f);
-
-                if (stats.isDirectory()) {
-                    returnFiles.push(...getFilesRecursively(dataDir, join(src, file), fullDest));
-                }
-            }
-            return returnFiles;
-        } else {
-            console.warn(`Could not locate ${src}, full path: ${srcFullPath}`);
-        }
-    } catch (e) {
-        console.error(`Error when reading ${src}:\n${e}`);
-    }
-
-    return returnFiles;
-}
-
 export function getHashedNameFromContents(contents: string, src: string) {
     const hash = createHash('md5');
     hash.update(contents);
