@@ -31,6 +31,8 @@
     import type { ClassValue } from 'svelte/elements';
     import type { PageData } from './$types';
 
+    // TODO: Cleanup unused imports
+    // TODO: Refactor and be sure these different functions are either wired in or removed
     interface Props {
         data: PageData;
         // showBackButton?: boolean;
