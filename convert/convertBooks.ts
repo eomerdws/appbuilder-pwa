@@ -714,9 +714,8 @@ function convertHtmlBook(context: ConvertBookContext, book: BookConfig, files: a
 }
 
 function replaceBloomLink(search: string, replace: string, content: string): string {
-    const newContent = content.replace(/${search}/gi, `${replace}`);
-
-    return newContent;
+    console.log(`search: ${search} replace:${replace} content length: ${content.length}`); //FIXME: Delete me before PR
+    return content.replace(search, replace);
 }
 
 function getBloomFilesRecursively(dataDir: string, src: string, dest: string): FileSrcDest[] {
@@ -780,8 +779,6 @@ function convertBloomBook(
             let newContent;
             const ext = bloomFile.src.split('.').pop() ?? '';
             if (ext !== undefined && ['htm', 'js', 'json', 'txt', 'html', 'css'].includes(ext)) {
-                // TODO: Write hashed filenames to the htm and css files
-
                 newContent = fs.readFileSync(bloomFile.src, 'utf-8');
                 if (ext !== undefined && ['htm', 'html'].includes(ext)) {
                     // This is the main part of our bloom book. We need to preserve
@@ -826,7 +823,7 @@ function convertBloomBook(
         if (verbose >= 3) console.log(`Replace links for ${book.name}`);
         for (const fileChange of fileChanges) {
             bookContent = replaceBloomLink(
-                fileChange.src.split('.').pop() ?? '',
+                fileChange.src.split('/').pop() ?? '',
                 fileChange.dest,
                 bookContent
             );
@@ -836,9 +833,17 @@ function convertBloomBook(
     if (verbose >= 3)
         console.log(`Save bloom html file for ${book.name} --> ${book.hashedFileName}`);
     files.push({
-        path: book.hashedFileName,
+        path: join(
+            'src',
+            'gen-assets',
+            'collections',
+            context.bcId,
+            book.id,
+            book.hashedFileName !== undefined ? book.hashedFileName : book.file
+        ),
         content: bookContent
     });
+    // may need to create a sys link of meta.json as bloom-player seems to want that file without the hashedfilename
 }
 
 function convertQuizBook(context: ConvertBookContext, book: BookConfig): Quiz {

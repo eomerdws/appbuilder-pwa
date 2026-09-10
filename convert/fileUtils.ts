@@ -4,10 +4,8 @@ import {
     copyFileSync,
     existsSync,
     mkdirSync,
-    readdirSync,
     readFileSync,
     rmSync,
-    statSync,
     writeFileSync
 } from 'fs';
 import { basename, extname, join, posix } from 'path';
