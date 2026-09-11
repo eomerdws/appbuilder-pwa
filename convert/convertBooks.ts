@@ -754,6 +754,14 @@ function getBloomFilesRecursively(dataDir: string, src: string, dest: string): F
   return returnFiles;
 }
 
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}
+
+function htmlSpaces(text: string): string {
+  return text.replace(/\s/g, "%20");
+}
+
 function convertBloomBook(
   context: ConvertBookContext,
   book: BookConfig,
@@ -810,11 +818,11 @@ function convertBloomBook(
   if (fileChanges.length > 0 && bookContent !== undefined) {
     if (verbose >= 3) console.log(`Replace links for ${book.name}`);
     for (const fileChange of fileChanges) {
-      bookContent = replaceBloomLink(
-        fileChange.src.split("/").pop() ?? "",
-        fileChange.dest,
-        bookContent,
-      );
+      let search = htmlSpaces(escapeRegExp(fileChange.src.split("/").pop() ?? ""));
+      //FIXME: Delete these console logs before PR
+      console.log("--------------------------------");
+      console.log(`search: ${search}`);
+      bookContent = replaceBloomLink(search, fileChange.dest, bookContent);
     }
   }
 
