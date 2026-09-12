@@ -62,7 +62,9 @@
     );
 
     let player;
-    let bookUrl = `/src/gen-assets/collections/${data.collection}/${data.id}/${book?.hashedFileName ?? ''}`;
+    let bookUrl = encodeURI(
+        `/src/gen-assets/collections/${data.collection}/${data.id}/${book?.hashedFileName ?? ''}`
+    );
     let lang: string = data?.bookCollection?.languageCode ?? '';
 </script>
 

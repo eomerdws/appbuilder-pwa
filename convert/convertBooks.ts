@@ -714,7 +714,6 @@ function convertHtmlBook(context: ConvertBookContext, book: BookConfig, files: a
 }
 
 function replaceBloomLink(search: RegExp, replace: string, content: string): string {
-    //console.log(`search: ${search} replace:${replace} content length: ${content.length}`); //FIXME: Delete me before PR
     return content.replace(search, replace);
 }
 
@@ -770,10 +769,6 @@ function getBloomFilesRecursively(dataDir: string, src: string, dest: string): F
 
 function escapeRegExp(text: string): string {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-}
-
-function htmlSpaces(text: string): string {
-    return text.replace(/\s/g, '%20');
 }
 
 function convertBloomBook(
@@ -839,20 +834,29 @@ function convertBloomBook(
     }
 
     if (fileChanges.length > 0 && bookContent !== undefined) {
-        if (verbose >= 3) {console.log(`Replace links for ${book.name}`);}
+        if (verbose >= 3) {
+            console.log(`Replace links for ${book.name}`);
+        }
+        const bookSrcRoot = join(context.dataDir, 'books', context.bcId, book.id);
+        const bookDestRoot = path.join('src', 'gen-assets', 'collections', context.bcId, book.id);
         for (const fileChange of fileChanges) {
-            const search = new RegExp(
-                escapeRegExp(htmlSpaces(fileChange.src.split('/').pop() ?? ''))
-            );
-            //FIXME: Delete these console logs before PR
-            console.log('--------------------------------');
-            console.log(`search: ${search}`);
-            bookContent = replaceBloomLink(search, fileChange.dest, bookContent);
+            const relSrc = path
+                .relative(bookSrcRoot, fileChange.src)
+                .split(path.sep)
+                .join('/');
+            const search = new RegExp(escapeRegExp(relSrc), 'gi');
+            // bloom-player resolves src/href values as relative to the book's own
+            // folder, so the replacement must be relative to bookDestRoot, not
+            // an absolute/root-relative path.
+            const relDest = path.relative(bookDestRoot, fileChange.dest).split(path.sep).join('/');
+            const destUrl = encodeURI(relDest);
+            bookContent = replaceBloomLink(search, destUrl, bookContent);
         }
     }
 
-    if (verbose >= 3)
-        {console.log(`Save bloom html file for ${book.name} --> ${book.hashedFileName}`);}
+    if (verbose >= 3) {
+        console.log(`Save bloom html file for ${book.name} --> ${book.hashedFileName}`);
+    }
     files.push({
         path: join(
             'src',
