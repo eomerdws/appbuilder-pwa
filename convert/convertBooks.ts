@@ -732,9 +732,12 @@ function getBloomFilesRecursively(dataDir: string, src: string, dest: string): F
                     : basename(getHashedName(dataDir, join(src, file)));
                 let fullDest: string;
 
-                if (['meta.json'].includes(file)) {
-                    // bloom-player requires it to be meta.json. Writing it as a symlink
-                    // failed to function properly
+                if (['meta.json'].includes(file) || basename(src) === 'audio') {
+                    // bloom-player requires meta.json to keep its name (symlinking it
+                    // did not work), and it derives audio URLs itself as
+                    // `audio/<sentence-id>.mp3` (see bloomplayer's own audio-loading
+                    // code) rather than reading them from an href/src we can rewrite,
+                    // so audio files must also keep their original, unhashed name.
                     fullDest = join(dest, file);
                 } else {
                     fullDest = stats.isDirectory() ? join(dest, file) : join(dest, hashedName);
