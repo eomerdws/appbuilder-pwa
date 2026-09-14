@@ -11,7 +11,6 @@ export const load: PageLoad = async ({ params }) => {
     const bookCollection = scriptConfig.bookCollections?.find((x) => x.id === collection);
     const book = bookCollection?.books.find((x) => x.id === id && x.type === 'bloom-player');
 
-    console.log(bookCollection.languageCode);
     return {
         id: id,
         book: book,

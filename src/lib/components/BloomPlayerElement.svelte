@@ -21,6 +21,7 @@
     // upgrading the bloom-player version you point `playerUrl` at.
 
     import { createEventDispatcher, onDestroy, onMount } from 'svelte';
+    import { SvelteURLSearchParams } from 'svelte/reactivity';
 
     export type AutoPlayType = 'yes' | 'no' | 'motion';
 
@@ -68,10 +69,11 @@
     let iframeEl: HTMLIFrameElement;
 
     function buildSrc(): string {
-        const params = new URLSearchParams();
+        //const params = new URLSearchParams();
+        const params = new SvelteURLSearchParams();
         params.set('url', bookUrl);
         if (lang) {
-            params.set('lang', lang);
+            params.set('lang', lang.slice(0, 2)); // BloomPlayer seems to only take 2 letter ISO 639-1 codes
         }
         params.set('paused', String(paused));
         params.set('autoplay', autoplay);
