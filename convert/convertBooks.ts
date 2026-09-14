@@ -774,6 +774,14 @@ function escapeRegExp(text: string): string {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
 }
 
+// Bloom's exported HTML percent-encodes reserved characters (e.g. spaces as
+// %20) in some attributes (img src) but leaves them literal in others (css
+// href), so links must be matched against both the literal and the
+// URL-encoded form of the file's relative path.
+function encodeUrlPathSegments(relPath: string): string {
+    return relPath.split('/').map(encodeURIComponent).join('/');
+}
+
 function convertBloomBook(
     context: ConvertBookContext,
     book: BookConfig,
@@ -847,7 +855,14 @@ function convertBloomBook(
                 .relative(bookSrcRoot, fileChange.src)
                 .split(path.sep)
                 .join('/');
-            const search = new RegExp(escapeRegExp(relSrc), 'gi');
+            const encodedRelSrc = encodeUrlPathSegments(relSrc);
+            const search =
+                encodedRelSrc === relSrc
+                    ? new RegExp(escapeRegExp(relSrc), 'gi')
+                    : new RegExp(
+                          `${escapeRegExp(relSrc)}|${escapeRegExp(encodedRelSrc)}`,
+                          'gi'
+                      );
             // bloom-player resolves src/href values as relative to the book's own
             // folder, so the replacement must be relative to bookDestRoot, not
             // an absolute/root-relative path.
