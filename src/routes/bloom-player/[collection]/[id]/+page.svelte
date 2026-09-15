@@ -65,9 +65,24 @@
     let bookUrl = encodeURI(
         `/src/gen-assets/collections/${data.collection}/${data.id}/${book?.hashedFileName ?? ''}`
     );
-    let lang: string = data?.bookCollection?.languageCode ?? '';
+    let lang: string = data?.bookCollection?.languageCode ?? ''; // Intended as the fallback if main method of getting language name fails
+    if (lang.length > 0 && data.book?.bloomMeta?.languages) {
+        for (const k of Object.entries(data.book.bloomMeta.languages)) {
+            const key = k[0] as string;
+            console.log(`key: ${key}`); //FIXME: Delete before PR
+            if (
+                data.book.bloomMeta.languages[key].name.toLowerCase() ===
+                data.bookCollection?.languageName?.toLowerCase()
+            ) {
+                lang = data.book.bloomMeta.languages[key].lang;
+            }
+        }
+    }
+
+    //FIXME: Delete before PR
     console.log('data:');
     console.log(data);
+    console.log(`lang: ${lang}`);
 </script>
 
 <div class="h-screen">
