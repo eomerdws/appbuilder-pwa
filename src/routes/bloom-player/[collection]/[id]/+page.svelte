@@ -66,6 +66,8 @@
         `/src/gen-assets/collections/${data.collection}/${data.id}/${book?.hashedFileName ?? ''}`
     );
     let lang: string = data?.bookCollection?.languageCode ?? '';
+    console.log('data:');
+    console.log(data);
 </script>
 
 <div class="h-screen">

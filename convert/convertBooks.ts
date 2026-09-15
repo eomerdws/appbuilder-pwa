@@ -520,6 +520,7 @@ export async function convertBooks(
                     break;
                 case 'bloom-player':
                     bookConverted = true;
+                    //FIX: remove these console logs before PR
                     console.warn(`book.id: ${book.id} book.name: ${book.name}`);
                     console.warn('------------------------------------------------');
                     console.log(book);
@@ -851,18 +852,12 @@ function convertBloomBook(
         const bookSrcRoot = join(context.dataDir, 'books', context.bcId, book.id);
         const bookDestRoot = path.join('src', 'gen-assets', 'collections', context.bcId, book.id);
         for (const fileChange of fileChanges) {
-            const relSrc = path
-                .relative(bookSrcRoot, fileChange.src)
-                .split(path.sep)
-                .join('/');
+            const relSrc = path.relative(bookSrcRoot, fileChange.src).split(path.sep).join('/');
             const encodedRelSrc = encodeUrlPathSegments(relSrc);
             const search =
                 encodedRelSrc === relSrc
                     ? new RegExp(escapeRegExp(relSrc), 'gi')
-                    : new RegExp(
-                          `${escapeRegExp(relSrc)}|${escapeRegExp(encodedRelSrc)}`,
-                          'gi'
-                      );
+                    : new RegExp(`${escapeRegExp(relSrc)}|${escapeRegExp(encodedRelSrc)}`, 'gi');
             // bloom-player resolves src/href values as relative to the book's own
             // folder, so the replacement must be relative to bookDestRoot, not
             // an absolute/root-relative path.
